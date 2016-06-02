@@ -47,6 +47,7 @@ class open:
             if er0.errno == 13:				#Permission denied: '/dev/usbtmc0'
                 os.system('sudo chmod 777 /dev/usbtmc0')
                 inst = USBTMC(device="/dev/usbtmc0")
+                self.Handle = ThorlabsPM100(inst=inst)
             elif er0.errno == 2:			#No such a [Errno 2] No such file or directory: '/dev/usbtmc0'
                 try:
                     USBTMC(device="/dev/usbtmc1")
@@ -68,6 +69,7 @@ class open:
                             if er2.errno == 13:		#Permission denied: '/dev/usbtmc2'
                                 os.system('sudo chmod 777 /dev/usbtmc2')
                                 inst = USBTMC(device="/dev/usbtmc2")
+                                self.Handle = ThorlabsPM100(inst=inst)
                             elif er2.errno == 2:	#No such a [Errno 2] No such file or directory: '/dev/usbtmc2'
                                 print ("Power meter is not connected!")
                                 return
