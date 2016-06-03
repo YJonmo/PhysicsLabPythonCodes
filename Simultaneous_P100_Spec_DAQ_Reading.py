@@ -34,10 +34,11 @@ def Spec_Read_Process():
     return
 
 # ######## A function for reading the DAQ analogue inpute on AINX ########
-def DAQ_Read_Process():
-    results = DAQ.AIN_Read(DAQ_handle, PhotoDiod_Port)
-    Current_DAQ_Signal[:] = results[0]
-    Current_DAQ_Time[:] = time.time()
+def DAQ_Read_Process(Nothing,):
+    print ("Started")
+    results = DAQ1.portRead(PhotoDiod_Port)
+    Current_DAQ_Signal = results[0]
+    Current_DAQ_Time = time.time()
     DAQ_Is_Read.value = 1
     return
 
@@ -73,12 +74,12 @@ if __name__ == "__main__":
     Timer_Is_Over.value = 0
 
 
-    No_DAC_Sample = 10000       # Number of samples for Photodiod per iteration of the laser exposer. Every sample takes ~0.6 ms.
+    No_DAC_Sample = 1000       # Number of samples for Photodiod per iteration of the laser exposer. Every sample takes ~0.6 ms.
     No_Power_Sample = No_DAC_Sample/2
     No_Spec_Sample = No_DAC_Sample/2
 
     Current_Spec_Record = Array('d', np.zeros(shape=( len(Spec1.Handle.wavelengths()) ,1), dtype = float ))
-    Full_Spec_Records = np.zeros(shape=(len(Spec1.Handle.wavelengths()), len(No_Spec_Sample)+1 ), dtype = float )
+    Full_Spec_Records = np.zeros(shape=(len(Spec1.Handle.wavelengths()), No_Spec_Sample ), dtype = float )
 
     DAQ_Signal = np.zeros(No_DAC_Sample)
     DAQ_Time   = np.zeros(No_DAC_Sample)
@@ -97,19 +98,22 @@ if __name__ == "__main__":
     DAQ_Index = 0
     Power_Index = 0
     Spec_Index = 0
-
+    Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
+    Pros_DAQ.start()
     while DAQ_Index < No_DAC_Sample:
+	print DAQ_Index
         if  DAQ_Is_Read.value == 1:
             DAQ_Is_Read.value = 0
-            Pros_DAQ = Process(target=DAQ_Read_Process, args=())
+            Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
             Pros_DAQ.start()
-            DAQ_Signal[DAQ_Index] = Current_DAQ_Signal
-            DAQ_Time[DAQ_Index]   = Current_DAQ_time
+            DAQ_Signal[DAQ_Index] = Current_DAQ_Signal[0]
+            DAQ_Time[DAQ_Index]   = Current_DAQ_Time[0]
             DAQ_Index = DAQ_Index + 1
-
+	    print DAQ_Index
+	'''
         if  Power_Is_Read.value == 1:
             Power_Is_Read.value = 0
-            Pros_Power = Process(target=power_Read_Process, args=())
+            Pros_Power = Process(target=Power_Read_Process, args=())
             Pros_Power.start()
             Power_Signal[Power_Index] = Current_Power_Signal
             Power_Time[Power_Index]   = Current_Power_time
@@ -122,7 +126,7 @@ if __name__ == "__main__":
             Spec_Full_Records[:, Spec_Index] = Spec_Full_Records
             Spec_Time[Spec_Index]   = Current_Spec_time
             Spec_Index = Spec_Index + 1
-
+	'''
 
 
 
@@ -131,7 +135,7 @@ if __name__ == "__main__":
 
     DAQ_Time2 = DAQ_Time[:] - DAQ_Time[0]
     plt.subplot(1,3,1)
-    plt.plot(DAQ_Time2, Power_Signal, label = "Photo Diode")
+    plt.plot(DAQ_Time2, DAQ_Signal, label = "Photo Diode")
     plt.title('Photo diode')
     plt.xlabel('Time (s)')
     plt.ylabel('Voltage (v)')
