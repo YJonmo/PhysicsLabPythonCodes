@@ -2,7 +2,7 @@
 from labjack import ljm
 
 
-def help(self):
+def help():
     print ("Please refer to this website in for installation and prerequisites of the LabJack device python library:")
     print ("https://labjack.com/support/software/examples/ljm/python")
     print ("To use this class and its functions, folowing syntax is recommended:")
