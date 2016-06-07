@@ -1,8 +1,9 @@
 
+
 from labjack import ljm
+import time
 
-
-def help():
+def help(self):
     print ("Please refer to this website in for installation and prerequisites of the LabJack device python library:")
     print ("https://labjack.com/support/software/examples/ljm/python")
     print ("To use this class and its functions, folowing syntax is recommended:")
@@ -140,9 +141,9 @@ class open:
     aValues = [199, 2, 1]
     self.Handle.handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)
     '''
-    # This function returns the analogue value recorde on one of the AIN ports (e.g., 'AIN0')
+    # This function returns the analogue value recorde on one of the AIN ports (e.g., 'AIN0') and the unix time when the value is read
     def portRead(self, Port):
-        return self.Handle.eReadNames(self.Handle.handle,1 , [Port])
+        return self.Handle.eReadNames(self.Handle.handle,1 , [Port])[0]
 
 
     '''
@@ -150,3 +151,4 @@ class open:
     '''
     def close(self):
         self.Handle.close(self.Handle.handle)
+
