@@ -35,18 +35,20 @@ def Spec_Read_Process():
 
 # ######## A function for reading the DAQ analogue inpute on AINX ########
 def DAQ_Read_Process(Nothing,):
-    print ("Started")
+    #print ("Started DAQ")
     results = DAQ1.portRead(PhotoDiod_Port)
-    Current_DAQ_Signal = results[0]
-    Current_DAQ_Time = time.time()
+    Current_DAQ_Signal[0] = results
+    #print (results[1] - 1465255110)
+    Current_DAQ_Time[0] =  time.time()#print Current_DAQ_Time[0]
     DAQ_Is_Read.value = 1
     return
 
 # ######## A function for reading the Power meter ########
 def Power_Read_Process():
-    results = DAQ.AIN_Read(DAQ_handle, PhotoDiod_Port)
-    Current_Power_Signal[:] = results[0]
-    Current_Power_Time[:] = time.time()
+    #print ("Started Power")
+    Current_Power_Signal[0] = Power_meter.readPower()
+    #sprint Current_Power_Signal
+    Current_Power_Time[0] = time.time()
     Power_Is_Read.value = 1
     return
 
@@ -84,13 +86,14 @@ if __name__ == "__main__":
     DAQ_Signal = np.zeros(No_DAC_Sample)
     DAQ_Time   = np.zeros(No_DAC_Sample)
     Current_DAQ_Signal = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-    Current_DAQ_Time = Array('d', np.zeros(shape=( 1 ,1), dtype = int ))
+    #Current_DAQ_Signal = Array('f', np.zeros(shape=( len(Spec_handle.wavelengths()) ,1), dtype = float ))
+    Current_DAQ_Time = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
 
 
     Power_Signal = np.zeros(No_Power_Sample)
     Power_Time   = np.zeros(No_Power_Sample)
     Current_Power_Signal = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-    Current_Power_Time = Array('d', np.zeros(shape=( 1 ,1), dtype = int ))
+    Current_Power_Time = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
 
 
     # ########### The file containing the records (HDF5 format)###########'''
@@ -100,25 +103,28 @@ if __name__ == "__main__":
     Spec_Index = 0
     Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
     Pros_DAQ.start()
+    Pros_Power = Process(target=Power_Read_Process, args=())
+    Pros_Power.start()
     while DAQ_Index < No_DAC_Sample:
-	print DAQ_Index
+	    #print DAQ_Index
         if  DAQ_Is_Read.value == 1:
             DAQ_Is_Read.value = 0
-            Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
-            Pros_DAQ.start()
             DAQ_Signal[DAQ_Index] = Current_DAQ_Signal[0]
             DAQ_Time[DAQ_Index]   = Current_DAQ_Time[0]
             DAQ_Index = DAQ_Index + 1
-	    print DAQ_Index
-	'''
+            Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
+            Pros_DAQ.start()
+
+	    #print DAQ_Index
+
         if  Power_Is_Read.value == 1:
             Power_Is_Read.value = 0
             Pros_Power = Process(target=Power_Read_Process, args=())
             Pros_Power.start()
-            Power_Signal[Power_Index] = Current_Power_Signal
-            Power_Time[Power_Index]   = Current_Power_time
+            Power_Signal[Power_Index] = Current_Power_Signal[0]
+            Power_Time[Power_Index]   = Current_Power_Time[0]
             Power_Index = Power_Index + 1
-
+    '''
         if  Spec_Is_Read.value == 1:
             Spec_Is_Read.value = 0
             Pros_Spec = Process(target=Spec_Read_Process, args=())
@@ -150,8 +156,9 @@ if __name__ == "__main__":
 
 
     plt.subplot(1,3,3)
-    plt.plot(Spec.getWavelength()[1:],Spec_Full_Records[1:])
+    plt.plot(Spec1.getWavelength()[1:],Spec_Full_Records[1:])
     plt.title('Specrometer recordings')
     plt.xlabel('Wavelength (nano meter)')
     plt.ylabel('Intensity')
     plt.pause(1)
+
