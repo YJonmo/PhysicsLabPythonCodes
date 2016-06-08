@@ -43,29 +43,33 @@ def SaveData(TimeIndex, Voltages):                          # This function save
     Spec_subgroup1.attrs['DAQT7 Details'] = np.string_(DAQ1.getDetails())
     file.close()
 
+if __name__ == "__main__":
 
-for I in range(No_D2AC_Sample):
-    try:
-        Time_Label = time.time()
-        Read_Voltages[I] = np.asarray(DAQ1.portRead('AIN1'))
-        Read_TimeIndex[I] = int(round(time.time() * 1000))
+    for I in range(No_D2AC_Sample):
+        try:
+            Time_Label = time.time()
+            Read_Voltages[I] = np.asarray(DAQ1.portRead('AIN1'))
+            Read_TimeIndex[I] = time.time()
 
-        if I < No_D2AC_WindowPlot:                                      # This 'if' and 'else' are used when you want to plot the read signal on the port. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
-            Read_Voltages_WindowPlot[I: :-1] = Read_Voltages[I: :-1]
-            PlotSignal(Read_TimeIndex[I : :-1] - Read_TimeIndex[0], Read_Voltages_WindowPlot[I: :-1])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
-        else:
-            Read_Voltages_WindowPlot = Read_Voltages[ I : I - No_D2AC_WindowPlot : -1]
-            PlotSignal(Read_TimeIndex[I : I - No_D2AC_WindowPlot : -1] - Read_TimeIndex[0], Read_Voltages_WindowPlot)      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
+            '''
+            ########## # This 'if' and 'else' are used when you want to plot the read signal on the port. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
+            if I < No_D2AC_WindowPlot:
+                Read_Voltages_WindowPlot[I: :-1] = Read_Voltages[I: :-1]
+                PlotSignal(Read_TimeIndex[I : :-1] - Read_TimeIndex[0], Read_Voltages_WindowPlot[I: :-1])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
+            else:
+                Read_Voltages_WindowPlot = Read_Voltages[ I : I - No_D2AC_WindowPlot : -1]
+                PlotSignal(Read_TimeIndex[I : I - No_D2AC_WindowPlot : -1] - Read_TimeIndex[0], Read_Voltages_WindowPlot)      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
+            '''
+
+            #print("\nAIN0 : %f V, AIN1 : %f V" % (results[0], results[1]))
+
+            print ("Last voltage was read %f seconds ago" % (time.time() - Time_Label))
+            I = I + 1
+        except KeyboardInterrupt:
+            break
 
 
-        #print("\nAIN0 : %f V, AIN1 : %f V" % (results[0], results[1]))
+    SaveData(Read_TimeIndex, Read_Voltages)       # This calls the function to save the recorded data in the HDF5 format. You can comment it out (by #) when using this code for testing.
 
-        print ("Last voltage was read %f seconds ago" % (time.time() - Time_Label))
-        I = I + 1
-    except KeyboardInterrupt:
-        break
+    DAQ1.close()
 
-
-SaveData(Read_TimeIndex, Read_Voltages)       # This calls the function to save the recorded data in the HDF5 format. You can comment it out (by #) when using this code for testing.
-
-DAQ1.close()
