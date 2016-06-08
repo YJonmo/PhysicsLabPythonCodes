@@ -3,7 +3,7 @@ import seabreeze.spectrometers as sb
 
 
 def help():
-    print ("Please refer to this website in for installation and prerequisites of the OceanOptice spectrometers python library:") 
+    print ("Please refer to this website in for installation and prerequisites of the OceanOptice spectrometers python library:")
     print ("https://github.com/ap--/python-seabreeze")
     print ("To use this class and its functions, following syntax is recommended:")
     print ("import SeaBreeze_Objective as SBO")
@@ -12,10 +12,10 @@ def help():
     print ("To clear the spectrometer use DeviceName.clear()")
     print ("To reset the spectrometer use DeviceName.reset()")
     print ("To close the spectrometer use DeviceName.close()")
-    print ("To get the detailed information about connected spectrometer use DeviceName.getDetails()")
-    print ("To read the intensities the recommended format is Intensities = DeviceName.getIntensity(True, True). The True values refer to Correct_dark_counts and Correct_nonlinearity")
+    print ("To get the detailed information about connected spectrometer use DeviceName.readDetails()")
+    print ("To read the intensities the recommended format is Intensities = DeviceName.readIntensity(True, True). The True values refer to Correct_dark_counts and Correct_nonlinearity")
     print ("The first element of Intensities (Intensities[0]) is the moment when the intensities are read (in unix time format)")
-    print ("To read the wavelengthes the recommended format is Wavelengthes = DeviceName.getWavelenght()")
+    print ("To read the wavelengthes the recommended format is Wavelengthes = DeviceName.readWavelenght()")
 
 
     print ("To chose an integration time use DeviceName.setIntegrationTime(IntegrationTime), where IntegrationTime is in microseconds and is from minimum integration time to maximum integration time")
@@ -94,7 +94,7 @@ class open:
         self.clear()
 
 
-    def getDetails(self):
+    def readDetails(self):
         attrs = vars(self.Handle)
         #for item in attrs.items():
         #    print item
@@ -130,14 +130,15 @@ class open:
         ''' Reading the intensities.
         Important! the first element in the Intensities array is the unix time for when the reading is finished.
         '''
-    def getIntensity(self, Correct_dark_counts, Correct_nonlinearity):
+    def readIntensity(self, Correct_dark_counts, Correct_nonlinearity):
         Intensities = self.Handle.intensities(correct_dark_counts=Correct_dark_counts, correct_nonlinearity=Correct_nonlinearity)
-        Intensities[0] = int(round(time.time() * 1000))
+        Intensities[0] = time.time()
+        #Intensities[0] = int(round(time.time() * 1000))
         return Intensities
 
 
         ''' Reading the wavelengthes of the spectrometer '''
-    def getWavelength(self):
+    def readWavelength(self):
         return self.Handle.wavelengths()
 
 
@@ -154,3 +155,4 @@ class open:
     ''' Closing the device '''
     def close(self):
         self.Handle.close()
+
