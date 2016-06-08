@@ -88,3 +88,4 @@ class open:
 
     def readPower(self):
         return self.Handle.read
+
