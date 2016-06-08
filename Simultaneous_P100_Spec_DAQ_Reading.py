@@ -13,54 +13,55 @@ time_start =  time.time()
 
 
 
-# ####################### Interrupt like delays (s) ####################### '''
-# Usage Ex: Px = Process(target=Timer_Multi_Process, args=(Timer_time,))
-# Px.start() and in your code constantly check for "Timer_Is_Done"
-
-def Timer_Process(Time_In_Seconds):
-    if Timer_Is_Done.value is 1:
-        print 'Error: This timer can be run one at a time. Either the previous timer is still running, or Timer_Is_Done bit is reset from previous timer run'
-    time.sleep(Time_In_Seconds)
-    Timer_Is_Done.value = 1
-
 
 # ########## A function for reading the spectrometer intensities ########### '''
-def Spec_Read_Process():
-    print 'Spectrumeter is waiting'
-    Intensities = Spec1.Read(True, True, Correct_nonlinearity) # The ' True' and 'True' refers to Spec_handle, Correct_dark_counts respectively
-    Spec_Current_Record[:] = Intensities
-    Spec_Is_Read.value = 1
-    #print "Intensities are read"
-    return
+def Spec_Read_Process(No_Spec_Sample):
+    for Spec_Index_Process in range(No_Spec_Sample):
+        #Time_Label = time.time()
+        Current_Spec_Record[:] = Spec1.readIntensity(True, True)
+        Spec_Time[Spec_Index_Process] = (time.time() )
+        Spec_Is_Read.value = 1
+        #Spec_Index_Process = Spec_Index_Process + 1
+        print "spectrometer Index is %i" % Spec_Index_Process
+        #print (Current_Spec_Record[0] - Time_Label)
+
+    '''
+    for I in range(No_Spec_Sample):
+        #Time_Label = time.time()
+        Current_Spec_Record[:] = Spec1.readIntensity(True, True)
+        Spec_Is_Read.value = 1
+        #print (Current_Spec_Record[0] - Time_Label)
+    '''
+
 
 # ######## A function for reading the DAQ analogue inpute on AINX ########
-def DAQ_Read_Process(Nothing,):
-    #print ("Started DAQ")
-    results = DAQ1.portRead(PhotoDiod_Port)
-    Current_DAQ_Signal[0] = results
-    #print (results[1] - 1465255110)
-    Current_DAQ_Time[0] =  time.time()#print Current_DAQ_Time[0]
+def DAQ_Read_Process(No_DAC_Sample,):
+    while DAQ_Index[0] < No_DAC_Sample:
+        #Time_Label = time.time()
+        DAQ_Signal[DAQ_Index[0]] = DAQ1.portRead('AIN1')
+        DAQ_Time[DAQ_Index[0]] = (time.time() )
+        DAQ_Index[0] = DAQ_Index[0] + 1
     DAQ_Is_Read.value = 1
-    return
 
 # ######## A function for reading the Power meter ########
-def Power_Read_Process():
-    #print ("Started Power")
-    Current_Power_Signal[0] = Power_meter.readPower()
-    #sprint Current_Power_Signal
-    Current_Power_Time[0] = time.time()
+def Power_Read_Process(No_Power_Sample):
+    while Power_Index[0] < No_Power_Sample:
+        #Time_Label = time.time()
+        Power_Signal[Power_Index[0]] = Power_meter.readPower()
+        Power_Time[Power_Index[0]] = (time.time() )
+        Power_Index[0] = Power_Index[0] + 1
     Power_Is_Read.value = 1
-    return
 
 
 if __name__ == "__main__":
 
-    PhotoDiod_Port = "AIN0"
+    PhotoDiod_Port = "AIN2"
     #Spectrometer_Trigger_Port = "DAC0"
 
     Spec1 = SBO.open()
+    Integration_Time = 20                                        # Integration time in ms
     Spec1.setTriggerMode(0)                                      # It is set for free running mode
-    Spec1.setIntegrationTime(10000)                             # Integration time is 10ms
+    Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
 
     DAQ1 = DAQ.open()
 
@@ -77,88 +78,122 @@ if __name__ == "__main__":
 
 
     No_DAC_Sample = 1000       # Number of samples for Photodiod per iteration of the laser exposer. Every sample takes ~0.6 ms.
-    No_Power_Sample = No_DAC_Sample/2
-    No_Spec_Sample = No_DAC_Sample/2
+    No_Power_Sample = int(round(No_DAC_Sample/3))
+    No_Spec_Sample = int(round(No_DAC_Sample/(.4*Integration_Time)))
 
     Current_Spec_Record = Array('d', np.zeros(shape=( len(Spec1.Handle.wavelengths()) ,1), dtype = float ))
+    #Spec_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
     Full_Spec_Records = np.zeros(shape=(len(Spec1.Handle.wavelengths()), No_Spec_Sample ), dtype = float )
+    Spec_Time   = Array('d', np.zeros(shape=( No_Spec_Sample ,1), dtype = float ))
+    Spec_Index = 0
+    Spec_Index2 = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
 
-    DAQ_Signal = np.zeros(No_DAC_Sample)
-    DAQ_Time   = np.zeros(No_DAC_Sample)
-    Current_DAQ_Signal = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-    #Current_DAQ_Signal = Array('f', np.zeros(shape=( len(Spec_handle.wavelengths()) ,1), dtype = float ))
-    Current_DAQ_Time = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
+    DAQ_Signal = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
+    DAQ_Time   = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
+    DAQ_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
 
 
-    Power_Signal = np.zeros(No_Power_Sample)
-    Power_Time   = np.zeros(No_Power_Sample)
-    Current_Power_Signal = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-    Current_Power_Time = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-
+    Power_Signal = Array('d', np.zeros(shape=( No_Power_Sample ,1), dtype = float ))
+    Power_Time   = Array('d', np.zeros(shape=( No_Power_Sample ,1), dtype = float ))
+    Power_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
 
     # ########### The file containing the records (HDF5 format)###########'''
 
-    DAQ_Index = 0
-    Power_Index = 0
-    Spec_Index = 0
-    Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
+
+    Pros_DAQ = Process(target=DAQ_Read_Process, args=(No_DAC_Sample,))
     Pros_DAQ.start()
-    Pros_Power = Process(target=Power_Read_Process, args=())
+    Pros_Power = Process(target=Power_Read_Process, args=(No_Power_Sample,))
     Pros_Power.start()
-    while DAQ_Index < No_DAC_Sample:
-	    #print DAQ_Index
-        if  DAQ_Is_Read.value == 1:
-            DAQ_Is_Read.value = 0
-            DAQ_Signal[DAQ_Index] = Current_DAQ_Signal[0]
-            DAQ_Time[DAQ_Index]   = Current_DAQ_Time[0]
-            DAQ_Index = DAQ_Index + 1
-            Pros_DAQ = Process(target=DAQ_Read_Process, args=(1,))
-            Pros_DAQ.start()
+    Pros_Spec = Process(target=Spec_Read_Process, args=(No_Spec_Sample,))
+    Pros_Spec.start()
 
-	    #print DAQ_Index
 
-        if  Power_Is_Read.value == 1:
-            Power_Is_Read.value = 0
-            Pros_Power = Process(target=Power_Read_Process, args=())
-            Pros_Power.start()
-            Power_Signal[Power_Index] = Current_Power_Signal[0]
-            Power_Time[Power_Index]   = Current_Power_Time[0]
-            Power_Index = Power_Index + 1
-    '''
+    while((Spec_Index < No_Spec_Sample)):
         if  Spec_Is_Read.value == 1:
             Spec_Is_Read.value = 0
-            Pros_Spec = Process(target=Spec_Read_Process, args=())
-            Pros_Spec.start()
-            Spec_Full_Records[:, Spec_Index] = Spec_Full_Records
-            Spec_Time[Spec_Index]   = Current_Spec_time
+            Full_Spec_Records[1:, Spec_Index] = Current_Spec_Record[1:]
+            #Full_Spec_Records[0, Spec_Index] = (Current_Spec_Record[0])*1000000000000
+            #Full_Spec_Records[0, Spec_Index] = time.time()
+            #print ('time %f' % Full_Spec_Records[0, Spec_Index])
+            #Spec_Time[Spec_Index] = Current_Spec_time
             Spec_Index = Spec_Index + 1
-	'''
+            #print ('dsds' , Spec_Index)
+    print('Spectrometer is done')
+    while True:
+        if ((DAQ_Is_Read.value == 1) & (Power_Is_Read.value == 1)):
+            break
 
 
+    DAQ1.close()
+    Spec1.close()
 
     # ######### Plotting the spectrumeter and the photodiod recordings ########
     plt.figure()
 
-    DAQ_Time2 = DAQ_Time[:] - DAQ_Time[0]
+    #DAQ_Time = DAQ_Time[0:DAQ_Index] - DAQ_Time[0]
+    #DAQ_Signal = DAQ_Signal[0:DAQ_Index]
     plt.subplot(1,3,1)
-    plt.plot(DAQ_Time2, DAQ_Signal, label = "Photo Diode")
+    #DAQ_Index = DAQ_Index = np.int32(DAQ_Index[0])
+    #DAQ_Time = np.asarray((DAQ_Time[0:DAQ_Index]) - np.asarray(DAQ_Time[0]), dtype=np.float64)
+    DAQ_Signal = np.asarray(DAQ_Signal[0:DAQ_Index[0]])
+    plt.plot(DAQ_Time[0:DAQ_Index[0]], DAQ_Signal[0:DAQ_Index[0]], label = "Photo Diode")
     plt.title('Photo diode')
     plt.xlabel('Time (s)')
     plt.ylabel('Voltage (v)')
 
     plt.subplot(1,3,2)
-    Power_Time2 = Power_Time[:] - Power_Time[0]
-    plt.plot(Power_Time2, Power_Signal, label = "Power meter")
+    # Power_Index = DAQ_Index = np.int32(DAQ_Index[0])
+    # Power_Time = np.asarray(Power_Time[0:Power_Index]) - np.asarray(Power_Time[0])
+    Power_Signal = np.asarray(Power_Signal[0:Power_Index[0]])
+    plt.plot(Power_Time[0:Power_Index[0]], Power_Signal[0:Power_Index[0]], label = "Power meter")
     plt.title('Power meter')
     plt.xlabel('Time (s)')
     plt.ylabel('Pwor (w)')
 
-
-
     plt.subplot(1,3,3)
-    plt.plot(Spec1.getWavelength()[1:],Spec_Full_Records[1:])
+    plt.plot(Spec1.readWavelength()[1:],Full_Spec_Records[1:]);
     plt.title('Specrometer recordings')
     plt.xlabel('Wavelength (nano meter)')
     plt.ylabel('Intensity')
-    plt.pause(1)
+    plt.show()
+
+    ################################Closing the devices#############################
+
+    plt.figure()
+    plt.plot(DAQ_Time, (DAQ_Signal[0:DAQ_Index[0]]-np.mean(DAQ_Signal))/float( np.max(np.abs(DAQ_Signal))))
+    plt.plot(Power_Time, (Power_Signal[0:Power_Index[0]]-np.mean(Power_Signal))/float( np.max(np.abs(Power_Signal))))
+    plt.title("Normalized Power and DAQ signals")
+    plt.xlabel("Unix time")
+    plt.legend(['DAQ', 'P100'])
+    plt.show()
+
+
+
+    plt.figure()
+    Power_Time2 = Power_Time[0:Power_Index[0]]
+    for I in range(Power_Index[0]-1):
+        Power_Time2[I] = Power_Time[I+1] - Power_Time[I]
+    plt.subplot(1,2,1)
+    plt.title("P100 latencies")
+    plt.ylabel("Time (s)")
+    plt.plot(Power_Time2[0:50]);
+    DAQ_Time2 = DAQ_Time[0:DAQ_Index[0]-1]
+    for I in range(DAQ_Index[0]-1):
+        DAQ_Time2[I] = DAQ_Time[I+1] - DAQ_Time[I]
+    plt.subplot(1,2,2)
+    plt.plot(DAQ_Time2[0:200])
+    plt.ylabel("Time (s)")
+    plt.title("DAQ latencies")
+    plt.show()
+
+    '''
+    Spec_Time2 = Spec_Time
+    Spec_Index2[0] = 0
+    Spec_Time2[Spec_Index2[0]] = 0
+    while Spec_Index2[0] < (124-1):
+        Spec_Time2[Spec_Index2[0]+1] = Spec_Time[Spec_Index2[0] + 1] - Spec_Time[Spec_Index2[0]]
+        Spec_Index2[0] = Spec_Index2[0] + 1
+    plt.plot(Spec_Time2[0:200])
+    plt.show()
+    '''
 
