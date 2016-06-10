@@ -55,11 +55,11 @@ def Power_Read_Process(No_Power_Sample):
 
 if __name__ == "__main__":
 
-    PhotoDiod_Port = "AIN2"
+    PhotoDiod_Port = "AIN1"
     #Spectrometer_Trigger_Port = "DAC0"
 
     Spec1 = SBO.open()
-    Integration_Time = 20                                        # Integration time in ms
+    Integration_Time = 2                                        # Integration time in ms
     Spec1.setTriggerMode(0)                                      # It is set for free running mode
     Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
 
@@ -168,32 +168,33 @@ if __name__ == "__main__":
     plt.show()
 
 
-
+    #################### Estimate the latencies of the devices ###################################
     plt.figure()
-    Power_Time2 = Power_Time[0:Power_Index[0]]
-    for I in range(Power_Index[0]-1):
-        Power_Time2[I] = Power_Time[I+1] - Power_Time[I]
-    plt.subplot(1,2,1)
-    plt.title("P100 latencies")
-    plt.ylabel("Time (s)")
-    plt.plot(Power_Time2[0:50]);
-    DAQ_Time2 = DAQ_Time[0:DAQ_Index[0]-1]
-    for I in range(DAQ_Index[0]-1):
-        DAQ_Time2[I] = DAQ_Time[I+1] - DAQ_Time[I]
-    plt.subplot(1,2,2)
-    plt.plot(DAQ_Time2[0:200])
+
+    DAQ_Latency = DAQ_Time[0:DAQ_Index[0]]
+    DAQ_Latency[0] = 0
+    for I in range(1,DAQ_Index[0]):
+        DAQ_Latency[I] = DAQ_Time[I] - DAQ_Time[I-1]
+    plt.subplot(1,3,1)
+    plt.plot(DAQ_Latency)
     plt.ylabel("Time (s)")
     plt.title("DAQ latencies")
-    plt.show()
 
-    '''
-    Spec_Time2 = Spec_Time
-    Spec_Index2[0] = 0
-    Spec_Time2[Spec_Index2[0]] = 0
-    while Spec_Index2[0] < (124-1):
-        Spec_Time2[Spec_Index2[0]+1] = Spec_Time[Spec_Index2[0] + 1] - Spec_Time[Spec_Index2[0]]
-        Spec_Index2[0] = Spec_Index2[0] + 1
-    plt.plot(Spec_Time2[0:200])
-    plt.show()
-    '''
+    Power_Latency = Power_Time[0:Power_Index[0]]
+    Power_Latency[0] = 0
+    for I in range(1,Power_Index[0]):
+        Power_Latency[I] = Power_Time[I] - Power_Time[I-1]
+    plt.subplot(1,3,2)
+    plt.plot(Power_Latency)
+    plt.title("P100 latencies")
+    plt.ylabel("Time (s)")
 
+    plt.subplot(1,3,3)
+    Spec_Latency = Spec_Time[0:Spec_Index]
+    Spec_Latency[0] = 0
+    for I in range(1,Spec_Index):
+        Spec_Latency[I] = Spec_Time[I] - Spec_Time[I-1]
+    plt.plot(Spec_Latency)
+    plt.ylabel("Time (s)")
+    plt.title("Spectrometer integration durations")
+    plt.show()
