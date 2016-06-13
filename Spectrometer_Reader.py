@@ -22,6 +22,7 @@ No_iterations = 20
 WaveLength = Spec.readWavelength()                                          #Number of iterations for reading the intensities.
 Intensities = np.zeros(shape=(len(WaveLength), No_iterations ), dtype = float )  #This is a matrix which will contain the intensities after the loop is finished.
 #Intensities[:,0] = Spec1.readIntensity(True, True)
+Time_Index = np.zeros(shape=(1, No_iterations ), dtype = float )
 
 def PlotOfIntensities(Wavelengthes, Intensities):               # This function plots the intensities and it incurs delay on reading the intensities. Do not use if you want to read the intensities as fast as possible.
     plt.clf()
@@ -36,6 +37,7 @@ def SaveData(WaveLength, Intensities):                          # This function 
     file = h5py.File(File_name, "w")
     Spec_subgroup1 = file.create_group("Spectrometer")
     Spec_intensities = file.create_dataset('Spectrometer/Intensities', data = Intensities)
+    Spec_time = file.create_dataset('Spectrometer/Time_Index', data = Time_Index)
     Spec_wavelength = file.create_dataset('Spectrometer/WaveLength', data = WaveLength)
     #dset.attrs["attr"] = b"Hello"
     Spec_subgroup1.attrs['Spectrometer Details'] = np.string_(Spec.readDetails())
@@ -47,7 +49,7 @@ if __name__ == "__main__":
     for I in range(No_iterations):
 
         Time_Label = time.time()
-        Intensities[:,I] =  Spec.readIntensity(True, True)
+        Intensities[:,I], Time_Index[0,I] =  Spec.readIntensity(True, True)
 
         PlotOfIntensities( WaveLength[1:], Intensities[1:,I])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
         print ("Last Intensitie are read %f seconds ago" % (time.time() - Time_Label))
@@ -56,4 +58,3 @@ if __name__ == "__main__":
     SaveData(WaveLength, Intensities)       # This calls the function to save the recorded data in the HDF5 format. You can comment it out (by #) when using this code for testing.
 
     Spec.close()
-
