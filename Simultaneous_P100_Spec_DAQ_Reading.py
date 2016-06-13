@@ -18,8 +18,8 @@ time_start =  time.time()
 def Spec_Read_Process(No_Spec_Sample):
     for Spec_Index_Process in range(No_Spec_Sample):
         #Time_Label = time.time()
-        Current_Spec_Record[:] = Spec1.readIntensity(True, True)
-        Spec_Time[Spec_Index_Process] = (time.time() )
+        Current_Spec_Record[:], Spec_Time[Spec_Index_Process]  = Spec1.readIntensity(True, True)
+        #Spec_Time[Spec_Index_Process] = (time.time() )
         Spec_Is_Read.value = 1
         #Spec_Index_Process = Spec_Index_Process + 1
         print "spectrometer Index is %i" % Spec_Index_Process
@@ -38,8 +38,8 @@ def Spec_Read_Process(No_Spec_Sample):
 def DAQ_Read_Process(No_DAC_Sample,):
     while DAQ_Index[0] < No_DAC_Sample:
         #Time_Label = time.time()
-        DAQ_Signal[DAQ_Index[0]] = DAQ1.portRead('AIN1')
-        DAQ_Time[DAQ_Index[0]] = (time.time() )
+        DAQ_Signal[DAQ_Index[0]], DAQ_Time[DAQ_Index[0]] = DAQ1.readPort('AIN1')
+        #DAQ_Time[DAQ_Index[0]] = (time.time() )
         DAQ_Index[0] = DAQ_Index[0] + 1
     DAQ_Is_Read.value = 1
 
@@ -47,8 +47,8 @@ def DAQ_Read_Process(No_DAC_Sample,):
 def Power_Read_Process(No_Power_Sample):
     while Power_Index[0] < No_Power_Sample:
         #Time_Label = time.time()
-        Power_Signal[Power_Index[0]] = Power_meter.readPower()
-        Power_Time[Power_Index[0]] = (time.time() )
+        Power_Signal[Power_Index[0]], Power_Time[Power_Index[0]] = Power_meter.readPower()
+        #Power_Time[Power_Index[0]] = (time.time() )
         Power_Index[0] = Power_Index[0] + 1
     Power_Is_Read.value = 1
 
