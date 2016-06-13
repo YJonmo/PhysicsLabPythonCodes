@@ -1,6 +1,6 @@
 from ThorlabsPM100 import ThorlabsPM100, USBTMC
 import os
-
+import time
 
 def help():
     print ("Please refer to this website in for installation and prerequisites of the Thorlabs PM100 power meter python library:")
@@ -87,5 +87,4 @@ class open:
     # This function returns the analogue value recorde on one of the AIN ports (e.g., 'AIN0')
 
     def readPower(self):
-        return self.Handle.read
-
+        return self.Handle.read, time.time()
