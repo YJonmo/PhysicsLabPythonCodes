@@ -1,74 +1,153 @@
-"""
-Demonstrates reading 2 analog inputs (AINs) in a loop from a LabJack.
 
-"""
-
-import DAQT7_Objective as DAQ
-import matplotlib.pyplot as plt
-import numpy as np
+from labjack import ljm
 import time
-import h5py
-import datetime
+import numpy as np
+
+def help(self):
+    print ("Please refer to this website in for installation and prerequisites of the LabJack device python library:")
+    print ("https://labjack.com/support/software/examples/ljm/python")
+    print ("To use this class and its functions, folowing syntax is recommended:")
+    print ("import DAQT7_Objective as DAQ")
+    print ("To see the help for this library use DAQ.help()")
+    print ("Assuming that your device name is DeviceName then here are some sample commands:")
+    print ("DeviceName = DAQ.open()")
+    print ("This command puts 4.2 volts on DAC1 port (digital to analogue conversion): DeviceName.writePort('DAC1', 4.2)")
+    print ("This command reads the analogue values from AIN0 port (analogue to digital conversion): ReadVoltage = DeviceName.readPort('AIN0')")
+    print ("This command writes a digital value (3.3v) to a digital port (FIO0) port: DeviceName.writePort('FIO0', 1)")
+    print ("This command reads the digital value (zero or one) from a digital port (FIO0) port: State = DeviceName.readPort('FIO0'). State: 0 or 1 ")
+    print ("*The analogue ports are DACs and AINs. The DACs are read and writable. The AINs are only readable and they are only used for measuring an external voltages (0 to 10v) connected to the port. The FIOs are digital ports and their state are read and writable and they can have only 0 or 3.3 v values (equivalent to 0 and 1 digits).")
+    #print ("To change the range of input voltage or speed of conversion for AINs, following attributes should be changed in the intialization:")
+    #print ("numFrames = 3")
+    #print ("names = [\")AIN0_NEGATIVE_CH\"), \")AIN0_RANGE\"), \")AIN0_RESOLUTION_INDEX\")]")
+    #print ("aValues = [199, 2, 1]")
+    #print ("self.Handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)")
+
+    print ("To close the device: DeviceName.close()")
+    print
+    print ("In order to change the setup of the DAQT7, you need to access to the detailed attributes of the labjack library. The detailed attributes can be accessed:")
+    print ("DeviceName.Handle.Attribute, where the Attribute is one of the following:")
+    print ( "	eReadNames		\n" \
+            "	eStreamRead		\n" \
+            "	eStreamStart		\n" \
+            "	eStreamStop		\n" \
+            "	eWriteAddress		\n" \
+            "	eWriteAddressArray		\n" \
+            "	eWriteAddressString		\n" \
+            "	eWriteAddresses		\n" \
+            "	eWriteName		\n" \
+            "	eWriteNameArray		\n" \
+            "	eWriteNameString		\n" \
+            "	eWriteNames		\n" \
+            "	errorToString		\n" \
+            "	errorcodes		\n" \
+            "	float32ToByteArray		\n" \
+            "	getHandleInfo		\n" \
+            "	handle		\n" \
+            "	int32ToByteArray		\n" \
+            "	ipToNumber		\n" \
+            "	listAll		\n" \
+            "	listAllExtended		\n" \
+            "	listAllS		\n" \
+            "	ljm		\n" \
+            "	loadConfigurationFile		\n" \
+            "	loadConstants		\n" \
+            "	loadConstantsFromFile		\n" \
+            "	loadConstantsFromString		\n" \
+            "	\log		\n" \
+            "	lookupConstantName		\n" \
+            "	lookupConstantValue		\n" \
+            "	macToNumber		\n" \
+            "	mbfbComm		\n" \
+            "	nameToAddress		\n" \
+            "	namesToAddresses		\n" \
+            "	numberToIP		\n" \
+            "	numberToMAC		\n" \
+            "	\open		\n" \
+            "	openAll		\n" \
+            "	openS		\n" \
+            "	readLibraryConfigS		\n" \
+            "	readLibraryConfigStringS		\n" \
+            "	readRaw		\n" \
+            "	resetLog		\n" \
+            "	streamBurst		\n" \
+            "	sys		\n" \
+            "	tcVoltsToTemp		\n" \
+            "	uint16ToByteArray		\n" \
+            "	uint32ToByteArray		\n" \
+            "	updateValues		\n" \
+            "	writeLibraryConfigS		\n" \
+            "	writeLibraryConfigStringS		\n" \
+            "	writeRaw		\n" )
 
 
-DAQ1 = DAQ.open()
+    '''
+    #attrs = dir(self.Handle.handle)
+    dirr = dir(self.Handle)
+    for item in dirr:
+        print (item)
+    '''
 
-No_D2AC_Sample = 1000                   # This is the lenght of the signal (voltage) will be recorded
-No_D2AC_WindowPlot = 150                        # This is the lenght of the signal (voltage) will be plotted
-
-Read_Voltages = np.zeros(No_D2AC_Sample, dtype = float )
-Read_TimeIndex = np.zeros( No_D2AC_Sample, dtype = float )
-Read_Voltages_WindowPlot = np.zeros(No_D2AC_WindowPlot, dtype = float )
-#Read_TimeIndex_Window_ = np.zeros(No_D2AC_Window, dtype = float )
-
-
-
-def PlotSignal(TimeIndex, Voltages):               # This function plots the recorded voltage and it incurs delay on reading the port. Do not use if you want to read the port voltage as fast as possible.
-    plt.clf()
-    plt.plot(TimeIndex, Voltages)
-    plt.xlabel('TimeIndex (ms)')
-    plt.ylabel('Voltages')
-    plt.xlim([TimeIndex[-1], TimeIndex[0]])
-    plt.ylim([0, 10.5])
-    plt.pause(0.1)
+    print ("Changing the setup for Labjack device is available in the device manual.")
+    #attrs =  [attr for attr in dir(self.Handle.handle) if not  attr.startswith('_')]
+    #for I in range(len(attrs)):
+    #print (dir(self.Handle.handle))
 
 
-def SaveData(TimeIndex, Voltages):                          # This function save the recorded date in the HDF5 format. You don't need to call it when using for testing.
-    File_name = "Chose_a_Name_DAQT7" + str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"
-    file = h5py.File(File_name, "w")
-    DAQ_subgroup1 = file.create_group("DAQT7")
-    DAQ_intensities = file.create_dataset('DAQT7/Voltages', data = Voltages)
-    DAQ_wavelength = file.create_dataset('DAQT7/TimeIndex', data = TimeIndex)
-    #dset.attrs["attr"] = b"Hello"
-    DAQ_subgroup1.attrs['DAQT7 Details'] = np.string_(DAQ1.getDetails())
-    file.close()
+class open:
+    '''
+    Initialization and detection of the LabJack device
+    '''
+    def __init__(self):
+        # Open first found LabJack
+        self.Handle = ljm
+        self.Handle.handle = self.Handle.open(self.Handle.constants.dtANY, self.Handle.constants.ctANY, "ANY")
+        #self.handle = self.Handle.openS("ANY", "ANY", "ANY")
+        info = self.Handle.getHandleInfo(self.Handle.handle)
+        print("Opened a LabJack with Device type: %i, Connection type: %i,\n" \
+        "Serial number: %i, IP address: %s, Port: %i,\nMax bytes per MB: %i" % \
+        (info[0], info[1], info[2], self.Handle.numberToIP(info[3]), info[4], info[5]))
 
-if __name__ == "__main__":
-
-    for I in range(No_D2AC_Sample):
-        try:
-            Time_Label = time.time()
-            Read_Voltages[I], Read_TimeIndex[I] = np.asarray(DAQ1.readPort('AIN1'))
-            #Read_TimeIndex[I] = time.time()
-
-            '''
-            ########## # This 'if' and 'else' are used when you want to plot the read signal on the port. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
-            if I < No_D2AC_WindowPlot:
-                Read_Voltages_WindowPlot[I: :-1] = Read_Voltages[I: :-1]
-                PlotSignal(Read_TimeIndex[I : :-1] - Read_TimeIndex[0], Read_Voltages_WindowPlot[I: :-1])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
-            else:
-                Read_Voltages_WindowPlot = Read_Voltages[ I : I - No_D2AC_WindowPlot : -1]
-                PlotSignal(Read_TimeIndex[I : I - No_D2AC_WindowPlot : -1] - Read_TimeIndex[0], Read_Voltages_WindowPlot)      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
-            '''
-
-            #print("\nAIN0 : %f V, AIN1 : %f V" % (results[0], results[1]))
-
-            print ("Last voltage was read %f seconds ago" % (time.time() - Time_Label))
-            I = I + 1
-        except KeyboardInterrupt:
-            break
+        ''' Setup and call eWriteNames to configure AINs on the LabJack.'''
+        numFrames = 3
+        names = ["AIN0_NEGATIVE_CH", "AIN0_RANGE", "AIN0_RESOLUTION_INDEX"]
+        aValues = [199, 2, 1]
+        self.Handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)
+        #return self.handle, Info
 
 
-    SaveData(Read_TimeIndex, Read_Voltages)       # This calls the function to save the recorded data in the HDF5 format. You can comment it out (by #) when using this code for testing.
 
-    DAQ1.close()
+    def getDetails(self):
+        info = self.Handle.getHandleInfo(self.Handle.handle)
+
+        return "Device type: %i, Connection type: %i,\n" \
+            "Serial number: %i, IP address: %s, Port: %i,\nMax bytes per MB: %i" % \
+            (info[0], info[1], info[2], ljm.numberToIP(info[3]), info[4], info[5])
+
+    '''
+    Writing values to the ports
+    * AIN ports are not writable
+    '''
+    def writePort(self, Port, Volt):      # DAC is one of the DAC ports (e.g., 'DAC0') and Volt is an integer from 0 to 5 volt (e.g., can be used for clossing or openning Shutter: 0=close, 5=open)
+
+        self.Handle.eWriteName(self.Handle.handle, Port, Volt)
+        return
+
+
+    '''
+    Reading analogue inpute values (0 to 10 v) in the AIN ports.
+    To change the range of input voltage or speed of conversion, below lines should be changed in the initialization:
+    numFrames = 3
+    names = [")AIN0_NEGATIVE_CH"), ")AIN0_RANGE"), ")AIN0_RESOLUTION_INDEX")]
+    aValues = [199, 2, 1]
+    self.Handle.handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)
+    '''
+    # This function returns the analogue value recorde on one of the AIN ports (e.g., 'AIN0') and the unix time when the value is read
+    def readPort(self, Port):
+        return np.float(self.Handle.eReadNames(self.Handle.handle,1 , [Port])[0]), time.time()
+
+
+    '''
+    Closing the device
+    '''
+    def close(self):
+        self.Handle.close(self.Handle.handle)
