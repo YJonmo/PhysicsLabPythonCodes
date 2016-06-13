@@ -132,9 +132,9 @@ class open:
         '''
     def readIntensity(self, Correct_dark_counts, Correct_nonlinearity):
         Intensities = self.Handle.intensities(correct_dark_counts=Correct_dark_counts, correct_nonlinearity=Correct_nonlinearity)
-        Intensities[0] = time.time()
+        #Intensities[0] = time.time()
         #Intensities[0] = int(round(time.time() * 1000))
-        return Intensities
+        return Intensities, time.time()
 
 
         ''' Reading the wavelengthes of the spectrometer '''
@@ -155,4 +155,3 @@ class open:
     ''' Closing the device '''
     def close(self):
         self.Handle.close()
-
