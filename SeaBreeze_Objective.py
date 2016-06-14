@@ -1,6 +1,6 @@
 import time
 import seabreeze.spectrometers as sb
-
+import time
 
 def help():
     print ("Please refer to this website in for installation and prerequisites of the OceanOptice spectrometers python library:")
