@@ -48,8 +48,8 @@ if __name__ == "__main__":
     for I in range(No_D2AC_Sample):
         try:
             Time_Label = time.time()
-            Read_Voltages[I] = np.asarray(DAQ1.portRead('AIN1'))
-            Read_TimeIndex[I] = time.time()
+                Read_Voltages[I], Read_TimeIndex[I] = np.asarray(DAQ1.readPort('AIN1'))
+
 
             '''
             ########## # This 'if' and 'else' are used when you want to plot the read signal on the port. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
