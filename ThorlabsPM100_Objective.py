@@ -1,16 +1,16 @@
 '''
-Please refer to this website in for installation and prerequisites of the Thorlabs PM100 power meter python library:")
-https://pypi.python.org/pypi/ThorlabsPM100")
-To use this class and its functions, folowing syntax is recommended:")
-import ThorlabsPM100 as P100")
-Assuming that your device name is DeviceName then here are some sample commands:")
-DeviceName = P100.open()")
-To read power Power = DevieceName.readPower()")
+Please refer to this website in for installation and prerequisites of the Thorlabs PM100 power meter python library:
+https://pypi.python.org/pypi/ThorlabsPM100
+To use this class and its functions, folowing syntax is recommended:
+import ThorlabsPM100_Objective
+Assuming that your device name is DeviceName then here are some sample commands:
+DeviceName = ThorlabsPM100_Objective.DetectPM100D()
+To read power Power = DevieceName.readPower()
 
-To close the device: DeviceName.close()")
+To close the device: DeviceName.close()
 
 In order to change the setup of the power meter, you need to access to its attributes. The detailed attributes can be accessed:")
-DeviceName.Attribute, where the Attribute is one of the following:")
+DeviceName.Attribute, where the Attribute is one of the following:
 DeviceName.abort
 DeviceName.getconfigure
 DeviceName.sense
@@ -36,7 +36,7 @@ import os
 import time
 
 
-class open:
+class DetectPM100D:
     '''
     Initialization and detection of the Thorlab device
     '''
@@ -52,7 +52,7 @@ class open:
                 os.system('sudo chmod 777 /dev/usbtmc0')
                 inst = USBTMC(device="/dev/usbtmc0")
                 self.Handle = ThorlabsPM100(inst=inst)
-            elif er0.errno == 2:			# ==>  No such a [Errno 2] No such file or directory: '/dev/usbtmc0'
+            elif er0.errno == 2:			# ==> [Errno 2] No such file or directory: '/dev/usbtmc0'
                 try:
                     USBTMC(device="/dev/usbtmc1")
                     inst = USBTMC(device="/dev/usbtmc1")
@@ -63,7 +63,7 @@ class open:
                         os.system('sudo chmod 777 /dev/usbtmc1')
                         inst = USBTMC(device="/dev/usbtmc1")
                         self.Handle = ThorlabsPM100(inst=inst)
-                    elif er1.errno == 2:	# ==> No such a [Errno 2] No such file or directory: '/dev/usbtmc1'
+                    elif er1.errno == 2:	# ==> [Errno 2] No such file or directory: '/dev/usbtmc1'
                         try:
                             USBTMC(device="/dev/usbtmc2")
                             inst = USBTMC(device="/dev/usbtmc2")
@@ -74,7 +74,7 @@ class open:
                                 os.system('sudo chmod 777 /dev/usbtmc2')
                                 inst = USBTMC(device="/dev/usbtmc2")
                                 self.Handle = ThorlabsPM100(inst=inst)
-                            elif er2.errno == 2:	# ==> No such a [Errno 2] No such file or directory: '/dev/usbtmc2'
+                            elif er2.errno == 2:	# ==> [Errno 2] No such file or directory: '/dev/usbtmc2'
                                 print ("Power meter is not connected!")
                                 return
 
@@ -83,5 +83,4 @@ class open:
 
     def readPower(self):
         ''' This function returns the analogue value recorde on one of the AIN ports (e.g., 'AIN0') '''
-
         return self.Handle.read, time.time()

@@ -14,34 +14,28 @@ time_start =  time.time()
 
 
 
-# ########## A function for reading the spectrometer intensities ########### '''
 def Spec_Read_Process(No_Spec_Sample):
+    # ########## A function for reading the spectrometer intensities ###########
     while Spec_Index[0] < (No_Spec_Sample -1):
         #Time_Label = time.time()
         Current_Spec_Record[:], Spec_Time[Spec_Index[0]]  = Spec1.readIntensity(True, True)
-        #Spec_Time[Spec_Index_Process] = (time.time() )
         Spec_Is_Read.value = 1
-        #Spec_Index_Process = Spec_Index_Process + 1
         Spec_Index[0] = Spec_Index[0] + 1
         print "spectrometer Index is %i" % Spec_Index[0]
     Spec_Is_Done.value = 1
 
 
-# ######## A function for reading the DAQ analogue inpute on AINX ########
 def DAQ_Read_Process(No_DAC_Sample,):
+    # ######## A function for reading the DAQ analogue inpute on AINX ########
     while DAQ_Index[0] < No_DAC_Sample:
-        #Time_Label = time.time()
         DAQ_Signal[DAQ_Index[0]], DAQ_Time[DAQ_Index[0]] = DAQ1.readPort('AIN1')
-        #DAQ_Time[DAQ_Index[0]] = (time.time() )
         DAQ_Index[0] = DAQ_Index[0] + 1
     DAQ_Is_Read.value = 1
 
-# ######## A function for reading the Power meter ########
 def Power_Read_Process(No_Power_Sample):
+    # ######## A function for reading the Power meter ########
     while Power_Index[0] < No_Power_Sample:
-        #Time_Label = time.time()
         Power_Signal[Power_Index[0]], Power_Time[Power_Index[0]] = Power_meter.readPower()
-        #Power_Time[Power_Index[0]] = (time.time() )
         Power_Index[0] = Power_Index[0] + 1
     Power_Is_Read.value = 1
 
@@ -49,17 +43,12 @@ def Power_Read_Process(No_Power_Sample):
 if __name__ == "__main__":
 
     PhotoDiod_Port = "AIN1"
-    #Spectrometer_Trigger_Port = "DAC0"
-
     Spec1 = SBO.open()
     Integration_Time = 2                                        # Integration time in ms
     Spec1.setTriggerMode(0)                                      # It is set for free running mode
     Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
-
     DAQ1 = DAQ.open()
-
     Power_meter = P100.open()
-
     Spec_Is_Read = Value('i', 0)
     Spec_Is_Read.value = 0
     Spec_Is_Done = Value('i', 0)
@@ -107,12 +96,7 @@ if __name__ == "__main__":
         if  Spec_Is_Read.value == 1:
             Spec_Is_Read.value = 0
             Full_Spec_Records[:, np.int(Spec_Index[0])] = Current_Spec_Record[:]
-            #print 'Spec_Index: %i'  %np.int(Spec_Index[0])
-            #print ('dsds' , Spec_Index)
     print('Spectrometer is done')
-    #Full_Spec_Records = Full_Spec_Records[:, 0:Spec_Index]
-    #Spec_Time2 = np.asarray(Spec_Time[0:Spec_Index])
-    #Spec_Time  = Spec_Time2
     while True:
         if ((DAQ_Is_Read.value == 1) & (Power_Is_Read.value == 1)):
             break
@@ -124,11 +108,7 @@ if __name__ == "__main__":
     # ######### Plotting the spectrumeter and the photodiod recordings ########
     plt.figure()
 
-    #DAQ_Time = DAQ_Time[0:DAQ_Index] - DAQ_Time[0]
-    #DAQ_Signal = DAQ_Signal[0:DAQ_Index]
     plt.subplot(1,3,1)
-    #DAQ_Index = DAQ_Index = np.int32(DAQ_Index[0])
-    #DAQ_Time = np.asarray((DAQ_Time[0:DAQ_Index]) - np.asarray(DAQ_Time[0]), dtype=np.float64)
     DAQ_Signal = np.asarray(DAQ_Signal[0:DAQ_Index[0]])
     plt.plot(DAQ_Time[0:DAQ_Index[0]], DAQ_Signal[0:DAQ_Index[0]], label = "Photo Diode")
     plt.title('Photo diode')
@@ -136,8 +116,6 @@ if __name__ == "__main__":
     plt.ylabel('Voltage (v)')
 
     plt.subplot(1,3,2)
-    # Power_Index = DAQ_Index = np.int32(DAQ_Index[0])
-    # Power_Time = np.asarray(Power_Time[0:Power_Index]) - np.asarray(Power_Time[0])
     Power_Signal = np.asarray(Power_Signal[0:Power_Index[0]])
     plt.plot(Power_Time[0:Power_Index[0]], Power_Signal[0:Power_Index[0]], label = "Power meter")
     plt.title('Power meter')

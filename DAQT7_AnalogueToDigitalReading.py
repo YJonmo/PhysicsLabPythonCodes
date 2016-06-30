@@ -11,7 +11,7 @@ import h5py
 import datetime
 
 
-DAQ1 = DAQ.open()
+DAQ1 = DAQT7_Objective.DetectDAQT7()
 
 No_D2AC_Sample = 1000                   # This is the lenght of the signal (voltage) will be recorded
 No_D2AC_WindowPlot = 150                        # This is the lenght of the signal (voltage) will be plotted
@@ -19,8 +19,6 @@ No_D2AC_WindowPlot = 150                        # This is the lenght of the sign
 Read_Voltages = np.zeros(No_D2AC_Sample, dtype = float )
 Read_TimeIndex = np.zeros( No_D2AC_Sample, dtype = float )
 Read_Voltages_WindowPlot = np.zeros(No_D2AC_WindowPlot, dtype = float )
-#Read_TimeIndex_Window_ = np.zeros(No_D2AC_Window, dtype = float )
-
 
 
 def PlotSignal(TimeIndex, Voltages):               # This function plots the recorded voltage and it incurs delay on reading the port. Do not use if you want to read the port voltage as fast as possible.
@@ -61,8 +59,6 @@ if __name__ == "__main__":
                 PlotSignal(Read_TimeIndex[I : I - No_D2AC_WindowPlot : -1] - Read_TimeIndex[0], Read_Voltages_WindowPlot)      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
             '''
 
-            #print("\nAIN0 : %f V, AIN1 : %f V" % (results[0], results[1]))
-
             print ("Last voltage was read %f seconds ago" % (time.time() - Time_Label))
             I = I + 1
         except KeyboardInterrupt:
@@ -72,4 +68,3 @@ if __name__ == "__main__":
     SaveData(Read_TimeIndex, Read_Voltages)       # This calls the function to save the recorded data in the HDF5 format. You can comment it out (by #) when using this code for testing.
 
     DAQ1.close()
-

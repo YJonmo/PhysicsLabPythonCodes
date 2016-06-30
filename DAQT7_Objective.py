@@ -2,9 +2,9 @@
 Please refer to this website in for installation and prerequisites of the LabJack device python library:
 https://labjack.com/support/software/examples/ljm/python
 To use this class and its functions, folowing syntax is recommended:
-import DAQT7_Objective as DAQ
+import DAQT7_Objective
 Assuming that your device name is DeviceName then here are some sample commands:
-DeviceName = DAQ.open()
+DeviceName = DAQT7_Objective.DetectDAQT7()
 This command puts 4.2 volts on DAC1 port (digital to analogue conversion): DeviceName.writePort('DAC1', 4.2)
 This command reads the analogue values from AIN0 port (analogue to digital conversion): ReadVoltage = DeviceName.readPort('AIN0')
 This command writes a digital value (3.3v) to a digital port (FIO0) port: DeviceName.writePort('FIO0', 1)
@@ -78,7 +78,7 @@ from labjack import ljm
 import time
 import numpy as np
 
-class open:
+class DetectDAQT7:
     '''
     Initialization and detection of the LabJack device
     '''

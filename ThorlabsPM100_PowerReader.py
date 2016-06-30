@@ -3,19 +3,10 @@ import time
 import h5py
 import datetime
 import matplotlib.pyplot as plt
-import ThorlabsPM100_Objective as P100
+import ThorlabsPM100_Objective
 
-'''
-try:
-	USBTMC(device="/dev/usbtmc1")
-	os.system('sudo chmod 777 /dev/usbtmc1')
-	inst = USBTMC(device="/dev/usbtmc1")
-except:
-	os.system('sudo chmod 777 /dev/usbtmc0')
-	inst = USBTMC(device="/dev/usbtmc0")
-'''
 
-Power_meter = P100.open()
+Power_meter = ThorlabsPM100_Objective.DetectPM100D()
 
 No_Power_Sample = 1000                   # This is the lenght of the signal (Power) will be recorded
 No_Power_WindowPlot = 150                        # This is the lenght of the signal (Power) will be plotted
@@ -33,8 +24,6 @@ def PlotSignal(TimeIndex, Power):               # This function plots the record
     plt.plot(TimeIndex, Power)
     plt.xlabel('TimeIndex (ms)')
     plt.ylabel('Power')
-    #plt.xlim([TimeIndex[-1], TimeIndex[0]])
-    #plt.ylim([0, 10.5])
     plt.pause(0.1)
 
 
@@ -44,8 +33,6 @@ def SaveData(TimeIndex, Power):                          # This function save th
     P100_subgroup1 = file.create_group("ThorlabsPM100")
     P100_Powers = file.create_dataset('ThorlabsPM100/Power', data = Power)
     P100_TimeIndex = file.create_dataset('ThorlabsPM100/TimeIndex', data = TimeIndex)
-    #dset.attrs["attr"] = b"Hello"
-    #P100_subgroup1.attrs['ThorlabsPM100 Details'] = np.string_(ThorlabsPM100.getDetails())
     file.close()
 
 if __name__ == "__main__":
@@ -55,8 +42,9 @@ if __name__ == "__main__":
 	        Time_Label = time.time()
 	        Read_Power[I], Read_TimeIndex[I] = Power_meter.readPower()
 
+		# This 'if' and 'else' are used when you want to plot the read signal on the sensor power. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
 		'''
-	        if I < No_Power_WindowPlot:                                      # This 'if' and 'else' are used when you want to plot the read signal on the sensor power. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
+	        if I < No_Power_WindowPlot:
 	            Read_Power_WindowPlot[I: :-1] = Read_Power[I: :-1]
 	            PlotSignal(Read_TimeIndex[I : :-1] - Read_TimeIndex[0], Read_Power_WindowPlot[I: :-1])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
 	        else:
@@ -70,5 +58,3 @@ if __name__ == "__main__":
 
 
 	SaveData(Read_TimeIndex, Read_Power)       # This calls the function to save the recorded data in the HDF5 format. You can comment it out (by #) when using this code for testing.
-
-	#Power_meter.close()

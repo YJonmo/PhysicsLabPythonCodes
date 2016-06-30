@@ -5,7 +5,7 @@ https://github.com/ap--/python-seabreeze"
 
 To use this class and its functions, following syntax is recommended:
 import SeaBreeze_Objective as SBO
-DeviceName = SBO.open()
+DeviceName = SBO.DetectSpectrometer()
 To clear the spectrometer use DeviceName.clear()
 To reset the spectrometer use DeviceName.reset()
 To close the spectrometer use DeviceName.close()
@@ -79,7 +79,7 @@ import time
 import seabreeze.spectrometers as sb
 
 
-class open:
+class DetectSpectrometer:
 ''' ************** Detection of the OceanOptics spectrumeter **************** '''
     def __init__(self):
         if len(sb.list_devices()) == 0:
@@ -132,8 +132,8 @@ class open:
         return Intensities, time.time()
 
 
-        ''' Reading the wavelengthes of the spectrometer '''
     def readWavelength(self):
+        ''' Reading the wavelengthes of the spectrometer '''
         return self.Handle.wavelengths()
 
 
