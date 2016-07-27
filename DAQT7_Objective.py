@@ -10,7 +10,7 @@ This command reads the analogue values from AIN0 port (analogue to digital conve
 This command writes a digital value (3.3v) to a digital port (FIO0) port: DeviceName.writePort('FIO0', 1)
 This command reads the digital value (zero or one) from a digital port (FIO0) port: State = DeviceName.readPort('FIO0'). State: 0 or 1
 *The analogue ports are DACs and AINs. The DACs are read and writable. The AINs are only readable and they are only used for measuring an external voltages (0 to 10v) connected to the port. The FIOs are digital ports and their state are read and writable and they can have only 0 or 3.3 v values (equivalent to 0 and 1 digits).
-This command reads a stream of analogue to digital conversion on port AIN1 at the sampling rate of 100kHz: ReadSignal = DeviceName.streanRead(100000, 'AIN1'):
+This command reads a stream of analogue to digital conversion on port AIN1 at the sampling rate of 100kHz: ReadSignal = DeviceName.streamRead(100000, 'AIN1'):
 To close the device: DeviceName.close()
 print
 In order to change the setup of the DAQT7, you need to access to the detailed attributes of the labjack library. The detailed attributes can be accessed:
@@ -127,7 +127,7 @@ class DetectDAQT7:
         return np.float(self.Handle.eReadNames(self.Handle.handle,1 , [Port])[0]), time.time()
 
 
-    def streanRead(self, ScanRate, Port):
+    def streamRead(self, ScanRate, Port):
         '''
         Reading analogue inpute values (0 to 10 v) in the AIN ports, in stream mode (using the internal buffer of the DAQ).
         ScanRate should be below 100000 when using one port only. Using two ports (e.g., AIN0 and AIN1, then it should be below 45000). Please refer to the manual.         
