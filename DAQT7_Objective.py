@@ -10,6 +10,7 @@ This command reads the analogue values from AIN0 port (analogue to digital conve
 This command writes a digital value (3.3v) to a digital port (FIO0) port: DeviceName.writePort('FIO0', 1)
 This command reads the digital value (zero or one) from a digital port (FIO0) port: State = DeviceName.readPort('FIO0'). State: 0 or 1
 *The analogue ports are DACs and AINs. The DACs are read and writable. The AINs are only readable and they are only used for measuring an external voltages (0 to 10v) connected to the port. The FIOs are digital ports and their state are read and writable and they can have only 0 or 3.3 v values (equivalent to 0 and 1 digits).
+This command reads a stream of analogue to digital conversion on port AIN1 at the sampling rate of 100kHz: ReadSignal = DeviceName.streanRead(100000, 'AIN1'):
 To close the device: DeviceName.close()
 print
 In order to change the setup of the DAQT7, you need to access to the detailed attributes of the labjack library. The detailed attributes can be accessed:
@@ -97,7 +98,6 @@ class DetectDAQT7:
         self.Handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)
 
 
-
     def getDetails(self):
         info = self.Handle.getHandleInfo(self.Handle.handle)
 
@@ -119,7 +119,7 @@ class DetectDAQT7:
         '''
         Reading analogue inpute values (0 to 10 v) in the AIN ports.
         To change the range of input voltage or speed of conversion, below lines should be changed in the initialization:
-        numFrames = 3
+        numFrames = 1
         names = [")AIN0_NEGATIVE_CH"), ")AIN0_RANGE"), ")AIN0_RESOLUTION_INDEX")]
         aValues = [199, 2, 1]
         self.Handle.handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)
@@ -127,6 +127,30 @@ class DetectDAQT7:
         return np.float(self.Handle.eReadNames(self.Handle.handle,1 , [Port])[0]), time.time()
 
 
+    def streanRead(self, ScanRate, Port):
+        '''
+        Reading analogue inpute values (0 to 10 v) in the AIN ports, in stream mode (using the internal buffer of the DAQ).
+        ScanRate should be below 100000 when using one port only. Using two ports (e.g., AIN0 and AIN1, then it should be below 45000). Please refer to the manual.         
+        '''
+        aScanList = self.Handle.namesToAddresses(len(Port), Port)[0]
+        
+        aNames = ["AIN_ALL_NEGATIVE_CH", "AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
+        aValues = [ljm.constants.GND, 10.0, 0, 0] #single-ended, +/-10V, 0 (default), 0 (default)
+        #ljm.eWriteNames(handle, len(aNames), aNames, aValues)
+        
+        aValues = [self.Handle.constants.GND, 10.0, 0, 1] #single-ended, +/-10V, 0 (default), 0 (default)
+        self.Handle.eWriteNames(self.Handle.handle, 4, aNames, aValues)
+        scansPerRead = 1
+        
+        ScanRate = self.Handle.eStreamStart(self.Handle.handle, scansPerRead, len(Port), aScanList, ScanRate)
+        print("\nStream started with a scan rate of %0.0f Hz." % ScanRate)
+        StartingMoment = time.time()
+        Read = ljm.eStreamRead(self.Handle.handle)
+        FinishingMoment = time.time()
+        Signal = Read[0]
+        print ('Elapsed time %f seconds' %(FinishingMoment - StartingMoment))
+        return Signal, StartingMoment, FinishingMoment
+        
 
     def close(self):
         ''' Closing the device '''
