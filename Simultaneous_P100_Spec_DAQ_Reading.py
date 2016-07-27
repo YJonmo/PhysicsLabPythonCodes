@@ -21,7 +21,7 @@ def Spec_Read_Process(No_Spec_Sample):
         Current_Spec_Record[:], Spec_Time[Spec_Index[0]]  = Spec1.readIntensity(True, True)
         Spec_Is_Read.value = 1
         Spec_Index[0] = Spec_Index[0] + 1
-        print "spectrometer Index is %i" % Spec_Index[0]
+        print ("spectrometer Index is %i" % Spec_Index[0])
     Spec_Is_Done.value = 1
 
 
@@ -43,12 +43,12 @@ def Power_Read_Process(No_Power_Sample):
 if __name__ == "__main__":
 
     PhotoDiod_Port = "AIN1"
-    Spec1 = SBO.open()
+    Spec1 = SBO.DetectDAQT7()
     Integration_Time = 2                                        # Integration time in ms
     Spec1.setTriggerMode(0)                                      # It is set for free running mode
     Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
-    DAQ1 = DAQ.open()
-    Power_meter = P100.open()
+    DAQ1 = DAQ.DetectDAQT7()
+    Power_meter = P100.DetectPM100D()
     Spec_Is_Read = Value('i', 0)
     Spec_Is_Read.value = 0
     Spec_Is_Done = Value('i', 0)
