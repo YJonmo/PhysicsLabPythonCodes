@@ -34,11 +34,11 @@ def PlotSignal(TimeIndex, Voltages):               # This function plots the rec
 def SaveData(TimeIndex, Voltages):                          # This function save the recorded date in the HDF5 format. You don't need to call it when using for testing.
     File_name = "Chose_a_Name_DAQT7" + str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"
     file = h5py.File(File_name, "w")
-    Spec_subgroup1 = file.create_group("DAQT7")
-    Spec_intensities = file.create_dataset('DAQT7/Voltages', data = Voltages)
-    Spec_wavelength = file.create_dataset('DAQT7/TimeIndex', data = TimeIndex)
+    DAQ_subgroup1 = file.create_group("DAQT7")
+    DAQ_Voltate = file.create_dataset('DAQT7/Voltages', data = Voltages)
+    DAQ_Time = file.create_dataset('DAQT7/TimeIndex', data = TimeIndex)
     #dset.attrs["attr"] = b"Hello"
-    Spec_subgroup1.attrs['DAQT7 Details'] = np.string_(DAQ1.getDetails())
+    DAQ_subgroup1.attrs['DAQT7 Details'] = np.string_(DAQ1.getDetails())
     file.close()
 
 if __name__ == "__main__":
@@ -53,10 +53,10 @@ if __name__ == "__main__":
             ########## # This 'if' and 'else' are used when you want to plot the read signal on the port. If you want to record the signal as fast as possible then you need to commend this 'if' and 'else'.
             if I < No_D2AC_WindowPlot:
                 Read_Voltages_WindowPlot[I: :-1] = Read_Voltages[I: :-1]
-                PlotSignal(Read_TimeIndex[I : :-1] - Read_TimeIndex[0], Read_Voltages_WindowPlot[I: :-1])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
+                PlotSignal(Read_TimeIndex[I : :-1] - Read_TimeIndex[0], Read_Voltages_WindowPlot[I: :-1])      # This calls the function for plotting the voltages and it incures delay on reading the digital to analogue converter. Comment out this line (by #) if you want to read the voltages fast.
             else:
                 Read_Voltages_WindowPlot = Read_Voltages[ I : I - No_D2AC_WindowPlot : -1]
-                PlotSignal(Read_TimeIndex[I : I - No_D2AC_WindowPlot : -1] - Read_TimeIndex[0], Read_Voltages_WindowPlot)      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
+                PlotSignal(Read_TimeIndex[I : I - No_D2AC_WindowPlot : -1] - Read_TimeIndex[0], Read_Voltages_WindowPlot)      # This calls the function for plotting the voltages and it incures delay on reading the digital to analogue converter. Comment out this line (by #) if you want to read the voltages fast.
             '''
 
             print ("Last voltage was read %f seconds ago" % (time.time() - Time_Label))
