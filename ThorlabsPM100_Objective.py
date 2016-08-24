@@ -75,11 +75,13 @@ class DetectPM100D:
                                 inst = USBTMC(device="/dev/usbtmc2")
                                 self.Handle = ThorlabsPM100(inst=inst)
                             elif er2.errno == 2:	# ==> [Errno 2] No such file or directory: '/dev/usbtmc2'
-                                print ("Power meter is not connected!")
+                                self.Error = 1
+                                print ("Power meter is not connected! \n")
                                 return
 
         print ("A Thorlabs PM100 device is opened.")
-
+        self.Error = 0
+        return
 
     def readPower(self):
         ''' This function returns the analogue value recorde on one of the AIN ports (e.g., 'AIN0') '''

@@ -5,9 +5,8 @@ import ThorlabsPM100_Objective as P100
 import time
 import datetime
 import numpy as np
-from multiprocessing import Process, Pipe, Value, Array
+from multiprocessing import Process, Value, Array
 import matplotlib.pyplot as plt
-import os.path
 
 time_start =  time.time()
 
@@ -21,7 +20,7 @@ def Spec_Read_Process(No_Spec_Sample):
         Current_Spec_Record[:], Spec_Time[Spec_Index[0]]  = Spec1.readIntensity(True, True)
         Spec_Is_Read.value = 1
         Spec_Index[0] = Spec_Index[0] + 1
-        print ("spectrometer Index is %i" % Spec_Index[0])
+        print "spectrometer Index is %i" % Spec_Index[0]
     Spec_Is_Done.value = 1
 
 
@@ -43,8 +42,8 @@ def Power_Read_Process(No_Power_Sample):
 if __name__ == "__main__":
 
     PhotoDiod_Port = "AIN1"
-    Spec1 = SBO.DetectDAQT7()
-    Integration_Time = 2                                        # Integration time in ms
+    Spec1 = SBO.DetectSpectrometer()
+    Integration_Time = 10                                        # Integration time in ms
     Spec1.setTriggerMode(0)                                      # It is set for free running mode
     Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
     DAQ1 = DAQ.DetectDAQT7()
@@ -60,10 +59,10 @@ if __name__ == "__main__":
     Timer_Is_Over = Value('i', 0)
     Timer_Is_Over.value = 0
 
-    DurationOfReading = 3.12      # Duration of reading in seconds.
-    No_DAC_Sample =   int(round(DurationOfReading*1000/1.7))                # Number of samples for DAQ analogue to digital converter (AINx). Roughly DAQ can read AIN1 2 and 3 evry 1.5 ms and 2.4 ms for AIN0,
+    DurationOfReading = 1.12      # Duration of reading in seconds.
+    No_DAC_Sample =   int(round(DurationOfReading*1000/0.5))                # Number of samples for DAQ analogue to digital converter (AINx). Roughly DAQ can read AINx every 0.4 ms
     No_Power_Sample = int(round(DurationOfReading*1000/5.1))                # Number of samples for P100D Power meter to read. Roughly P100 can read the power every 2.7 ms.
-    No_Spec_Sample =  int(round(DurationOfReading*1000/(Integration_Time))) # Number of samples for spectrometer to read. It takes integration time can read the power every 2.7 ms.
+    No_Spec_Sample =  int(round(DurationOfReading*1000/(Integration_Time))) # Number of samples for spectrometer to read.
 
     Current_Spec_Record = Array('d', np.zeros(shape=( len(Spec1.Handle.wavelengths()) ,1), dtype = float ))
     #Spec_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
@@ -95,7 +94,7 @@ if __name__ == "__main__":
     while((Spec_Is_Done.value == 0)):
         if  Spec_Is_Read.value == 1:
             Spec_Is_Read.value = 0
-            Full_Spec_Records[:, np.int(Spec_Index[0])] = Current_Spec_Record[:]
+            Full_Spec_Records[:, np.int(Spec_Index[0])-1] = Current_Spec_Record[:]
     print('Spectrometer is done')
     while True:
         if ((DAQ_Is_Read.value == 1) & (Power_Is_Read.value == 1)):

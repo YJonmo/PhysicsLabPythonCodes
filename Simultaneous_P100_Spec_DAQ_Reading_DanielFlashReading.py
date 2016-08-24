@@ -89,13 +89,14 @@ def Spec_Read_Process(No_Spec_Sample):
     Spec_Is_Done.value = 1
 
 
-def DAQ_Read_Process(No_DAC_Sample,):
-    SamplingRate = int(No_DAC_Sample/2)  # 10kHz
+def DAQ_Read_Process(SamplingRate):
+    #SamplingRate = int(No_DAC_Sample/2)  # 10kHz
     print "GO GO GO!"
     print "FLASH NOW!"
     Read, DAQ_Starting[0], DAQ_Ending[0] = DAQ1.streamRead(SamplingRate, 'AIN1')
+    #print Read[0]
     print len(Read[0])
-    print len(DAQ_Signal)
+    #print len(DAQ_Signal)
     #plt.plot(Read[0])
     
     DAQ_Signal[0:len(Read[0])] = np.asarray(Read[0])
@@ -121,7 +122,7 @@ if __name__ == "__main__":
 
     PhotoDiod_Port = "AIN1"
     Spec1 = SBO.DetectSpectrometer()
-    Integration_Time = 1                                        # Integration time in ms
+    Integration_Time = 2                                        # Integration time in ms
     Spec1.setTriggerMode(0)                                      # It is set for free running mode
     Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
     DAQ1 = DAQ.DetectDAQT7()
@@ -141,7 +142,8 @@ if __name__ == "__main__":
     #No_DAC_Sample =   int(round(DurationOfReading*1000/0.5))                # Number of samples for DAQ analogue to digital converter (AINx). Roughly DAQ can read AINx every 0.4 ms
     No_Power_Sample = int(round(DurationOfReading*1000/4.5))                # Number of samples for P100D Power meter to read. Roughly P100 can read the power every 2.7 ms.
     No_Spec_Sample =  int(round(DurationOfReading*1000/(Integration_Time))) # Number of samples for spectrometer to read.
-    No_DAC_Sample = 20000           # this results in a 10kHz sampling rate in streaming mode
+    SamplingRate = 10000    
+    No_DAC_Sample = SamplingRate*2           # this results in a 10kHz sampling rate in streaming mode
     Current_Spec_Record = Array('d', np.zeros(shape=( len(Spec1.Handle.wavelengths()) ,1), dtype = float ))
     #Spec_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
     Full_Spec_Records = np.zeros(shape=(len(Spec1.Handle.wavelengths()), No_Spec_Sample ), dtype = float )
@@ -162,7 +164,7 @@ if __name__ == "__main__":
     # ########### The file containing the records (HDF5 format)###########'''
 
 
-    Pros_DAQ = Process(target=DAQ_Read_Process, args=(No_DAC_Sample,))
+    Pros_DAQ = Process(target=DAQ_Read_Process, args=(SamplingRate,))
     Pros_DAQ.start()
     Pros_Power = Process(target=Power_Read_Process, args=(No_Power_Sample,))
     Pros_Power.start()
@@ -195,16 +197,16 @@ if __name__ == "__main__":
 
 
     #################### Estimate the latencies of the devices ###################################
-    '''    
+      
     plt.figure()
-    
+    '''
     DAQ_Latency = DAQ_Time[0:DAQ_Index[0]]
     DAQ_Latency[0] = 0
     for I in range(1,DAQ_Index[0]):
         DAQ_Latency[I] = DAQ_Time[I] - DAQ_Time[0]
     #SAVE
     #SaveDataDAQ(DAQ_Latency, DAQ_Signal[0:DAQ_Index[0]]) 
-        
+    
     plt.subplot(1,3,1)
     plt.plot(DAQ_Latency)
     plt.ylabel("Time (s)")
@@ -214,25 +216,25 @@ if __name__ == "__main__":
     Power_Latency = Power_Time[0:Power_Index[0]]
     Power_Latency[0] = 0
     for I in range(1,Power_Index[0]):
-        Power_Latency[I] = Power_Time[I] - Power_Time[0]
+        Power_Latency[I] = Power_Time[I] - Power_Time[I-1]
 
-    #plt.subplot(1,3,2)
-    #plt.plot(Power_Latency)
-    #plt.title("P100 latencies")
-    #plt.ylabel("Time (s)")
+    plt.subplot(1,3,2)
+    plt.plot(Power_Latency)
+    plt.title("P100 latencies")
+    plt.ylabel("Time (s)")
 
-    #plt.subplot(1,3,3)
+    plt.subplot(1,3,3)
     Spec_Latency = Spec_Time[0:np.int(Spec_Index[0])]
     Spec_Latency[0] = 0
     for I in range(1,Spec_Index[0]):
-        Spec_Latency[I] = np.float(Spec_Time[I] - Spec_Time[0])
-    #plt.plot(Spec_Latency)
-    #plt.ylabel("Time (s)")
-    #plt.title("Spectrometer integration durations")
-    #plt.show()
+        Spec_Latency[I] = np.float(Spec_Time[I] - Spec_Time[I-1])
+    plt.plot(Spec_Latency)
+    plt.ylabel("Time (s)")
+    plt.title("Spectrometer integration durations")
+    plt.show()
 
-    DAQ_Time = np.linspace(0, No_DAC_Sample/(10000), No_DAC_Sample)+0.038
-    
+    #DAQ_Time = np.linspace(0, No_DAC_Sample/(10000), No_DAC_Sample)+0.038
+    DAQ_Time = np.linspace(DAQ_Starting[0], (No_DAC_Sample*1)/float(SamplingRate), No_DAC_Sample) 
     # SSSSAAAVVVEEE!!!
     SaveDataDAQ(DAQ_Time,DAQ_Signal) 
     SaveDataPWR(Power_Latency, Power_Signal[0:Power_Index[0]])
@@ -256,7 +258,7 @@ if __name__ == "__main__":
 
     plt.subplot(1,3,2)
     Power_Signal = np.asarray(Power_Signal[0:Power_Index[0]])
-    plt.plot(Power_Latency, Power_Signal[0:Power_Index[0]], label = "Power meter")
+    plt.plot(Power_Latency, label = "Power meter")
     plt.title('Power meter')
     plt.xlabel('Time (s)')
     plt.ylabel('Power (w)')
@@ -283,5 +285,6 @@ if __name__ == "__main__":
     time.sleep(0.1)
     DAQ1.close()
     Spec1.close()
+
 
 

@@ -80,20 +80,56 @@ import seabreeze.spectrometers as sb
 
 
 class DetectSpectrometer:
-''' ************** Detection of the OceanOptics spectrumeter **************** '''
+    ''' ************** Detection of the OceanOptics spectrumeter **************** '''
     def __init__(self):
-        if len(sb.list_devices()) == 0:
-            print ("No spectrometer is detected!")
-            return
-        else:
+        try:
+            sb.list_devices()
+            if len(sb.list_devices()) == 0:
+                print ("No spectrometer is detected! \n")
+                self.Error = 1
+                return         
+            else:
+                self.detect()
+        except Exception, e:
+            if (e.message == 'This should not have happened. Apparently this device has 0 serial number features. The code expects it to have 1 and only 1. Please file a bug report including a description of your device.'):
+                #print ('Please unplug the spectrometer and then plug again. Then close the python command line and reopen it. Last')
+                print ('Unplug the spectrometer and then plug again, then close the python command line and reopen it.')
+                self.Error = 1
+                return
+        #return             
+    
+    
+    
+    def detect(self):
+        try:                 
             devices = sb.list_devices()
+            sb.Spectrometer(devices[0]).close()
             self.Handle = sb.Spectrometer(devices[0])
+            self.Error = 0
             print (devices)
             print ('Serial number:%s' % self.Handle.serial_number)
             print ('Model:%s' % self.Handle.model)
             print ('minimum_integration_time_micros: %s microseconds' % self.Handle.minimum_integration_time_micros)
-        self.clear()
-
+            self.clear()
+            self.Error = 0
+            return
+        except Exception, e:
+            if  (e.message == 'Device already opened.'):
+                #print ('Device will be reseted')                        
+                #self.reset()
+                print ('Error: ' + e.message)
+                print ('Unplug the spectrometer and then plug again')
+            elif (e.message == 'Error: Data transfer error'):
+                print ('Error: ' + e.message)
+                print ('Please unplug the spectrometer and then plug again. Then close the python command line and reopen it.')
+                #return
+            else:
+                print (e.message)
+                print ('Please unplug the spectrometer and then plug again. Then close the python command line and reopen it. ')
+                #return
+            self.Error = 1    
+            print('\033[93m' + 'Openning spectrometer failed!')
+            return
 
     def readDetails(self):
         attrs = vars(self.Handle)
@@ -103,7 +139,7 @@ class DetectSpectrometer:
         ''' This function resets the spectrometer. To make a hardware reset unplug it from the computer and then plug in again. '''
         devices = sb.list_devices()
         if len(sb.list_devices()) == 0:
-            print ("No spectrometer is detected!")
+            print ("No spectrometer is detected! \n")
             return
         else:
             self.Handle.close()

@@ -14,8 +14,8 @@ import datetime
 
 Spec = SBO.DetectSpectrometer()
 
-Spec.setTriggerMode(0)                                      # It is set for free running mode
-Spec.setIntegrationTime(10000)                             # Integration time is 10ms
+Spec.setTriggerMode(0)                                      
+Spec.setIntegrationTime(200000)                             # Integration time is 10ms
 
 No_iterations = 20
 
@@ -49,7 +49,8 @@ if __name__ == "__main__":
 
             Time_Label = time.time()
             Intensities[:,I], Time_Index[0,I] =  Spec.readIntensity(True, True)
-
+            print ('read at %f' %Time_Index[0,I] )
+            
             PlotOfIntensities( WaveLength[1:], Intensities[1:,I])      # This calls the function for plotting the intensities and it incures delay on reading the intensities. Comment out this line (by #) if you want to read the intensities according to the integration time.
             print ("Last Intensitie are read %f seconds ago" % (time.time() - Time_Label))
         except KeyboardInterrupt:
