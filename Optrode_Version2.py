@@ -228,7 +228,7 @@ def Multi_Integration_Paradigm(Integration_list_MilSec, Integration_Buffer_Time,
 
 
 
-def Continious_Paradigm(Integration_Continious, No_Spec_Sample, No_DAC_Sample, No_Power_Sample):
+def Continious_Paradigm(Integration_Continious, No_Spec_Sample, No_DAC_Sample, No_Power_Sample, No_BakGro_Spec):
     if (Power_meter.Error == 0):
         Pros_Power = Process(target=Power_Read_Process, args=(No_Power_Sample,))
         Pros_Power.start()
@@ -254,7 +254,7 @@ def Continious_Paradigm(Integration_Continious, No_Spec_Sample, No_DAC_Sample, N
 
 
     
-    while (int(Spec_Index[0]) < No_Spec_Sample - 10 ):
+    while (int(Spec_Index[0]) < No_Spec_Sample - No_BakGro_Spec ):
         DAQ_Signal[DAQ_Index[0]], DAQ_Time[DAQ_Index[0]] = DAQ1.readPort(PhotoDiod_Port)
         DAQ_Index[0] = DAQ_Index[0] + 1
 
@@ -334,7 +334,7 @@ if __name__ == "__main__":
             Integration_Buffer_Time = 100       #ms               # This is for the spectrometer. This is the time from the integration started till shutter opens
             #DurationOfReading = np.sum(Integration_list_MilSec)  + len(Integration_list_MilSec)*Delay_Between_Integrations   # Duration of reading in seconds.
             DurationOfReading = (Integration_list_MilSec[-1] + 2*Integration_Buffer_Time)*len(Integration_list_MilSec)     # Duration of reading in seconds.
-            
+            No_BakGro_Spec = 10       # This is for continious reading and refers to the last few spectrom reading wich are background and the laser is off
     
             if (Power_meter.Error == 0):
                 #Powermeter_SamplingRate = 5.1     #ms
@@ -373,9 +373,10 @@ if __name__ == "__main__":
                            val = float(DurationOfReading)
                            DurationOfReading = float(DurationOfReading)*1000
                            if (DurationOfReading < 0):
-                            #if (float(Integration_Continious) < Spec_SamplingRate):
                                 print ('DurationOfReading is too short. Enter a greater number')
                            else:
+                                DurationOfReading = DurationOfReading + No_BakGro_Spec*float(Integration_Continious)
+                               
                                 break
                         except ValueError:
                            print("That's not a number!")  
@@ -452,7 +453,7 @@ if __name__ == "__main__":
                         print ('step1')
                         Multi_Integration_Paradigm(Integration_list_MilSec, Integration_Buffer_Time, Shutter_Delay, No_Power_Sample)
                     else:                           # Continious paradigm
-                        Continious_Paradigm(float(Integration_Continious), No_Spec_Sample, No_DAC_Sample, No_Power_Sample)
+                        Continious_Paradigm(float(Integration_Continious), No_Spec_Sample, No_DAC_Sample, No_Power_Sample, No_BakGro_Spec)
                         
                     ################################Closing the devices#############################  
                     Spec_Details = Spec1.readDetails()
