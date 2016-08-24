@@ -356,21 +356,27 @@ if __name__ == "__main__":
                         Integration_Continious = raw_input('Enter the integration time for the spectrometer in MILLISECONDS (e.g., press 4 and then press Enter): ')
                         print ('\n')  
                         try:
-                           val = float(Integration_Continious)
+                            val = float(Integration_Continious)
+                            if (float(Integration_Continious) < Spec1.Handle.minimum_integration_time_micros/float(1000)):
+                            #if (float(Integration_Continious) < Spec_SamplingRate):
+                                print ('Integration time is too short. Enter a greater number')
+                            else:
+                                break
                         except ValueError:
                            print("That's not a number!")  
                            print ('\n')
-                        if (Integration_Continious < 2) | (Integration_Continious < Spec1.Handle.minimum_integration_time_micros/float(1000)):
-                            print ('Integration time is too short. Enter a greater number')
-                        else:
-                            break
+                        
                     while 1==1:
                         DurationOfReading = raw_input('Enter the duration of the recording in SECONDS (e.g., press 7 and then press Enter): ')
                         print ('\n')
                         try:
                            val = float(DurationOfReading)
                            DurationOfReading = float(DurationOfReading)*1000
-                           break
+                           if (DurationOfReading < 0):
+                            #if (float(Integration_Continious) < Spec_SamplingRate):
+                                print ('DurationOfReading is too short. Enter a greater number')
+                           else:
+                                break
                         except ValueError:
                            print("That's not a number!")  
                            print ('\n')
@@ -561,6 +567,7 @@ if __name__ == "__main__":
             DAQ1.close()
             Spec1.close()
     except Exception, e:
+        print(e.message)
         print('Error happend and cession failed \n')
         time.sleep(0.1)
         DAQ1.close()
