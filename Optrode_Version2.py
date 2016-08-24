@@ -346,8 +346,8 @@ if __name__ == "__main__":
                 if (Paradigm == 'c') | (Paradigm == 'C'):
                     Paradigm == 'c'
                     #print ('Integration time for the spectrometer must be at least 2 ms and also greater than the minimum integration time of the spectrometer.')
-                    print ('Integration time for this spectrometer must be at least %f \n' %Spec_SamplingRate)
-                    print ('We recommend integration time of %f or higher \n' %(Spec_SamplingRate + Spec1.Handle.minimum_integration_time_micros/float(2000)))
+                    print ('Integration time for this spectrometer must be at least %f ms\n' %Spec_SamplingRate)
+                    print ('We recommend integration time of %f ms or higher \n' %(Spec_SamplingRate + Spec1.Handle.minimum_integration_time_micros/float(2000)))
                     #print ('Example, for QE65000 it should be at least 8 ms and for HR2000+ it should be at least 2 ms.')
                     while 1==1:
                         Integration_Continious = raw_input('Enter the integration time for the spectrometer in MILLISECONDS (e.g., press 4 and then press Enter): ')
