@@ -232,16 +232,19 @@ def Continious_Paradigm(Integration_Continious, No_Spec_Sample, No_DAC_Sample, N
     if (Power_meter.Error == 0):
         Pros_Power = Process(target=Power_Read_Process, args=(No_Power_Sample,))
         Pros_Power.start()
-    #Local_Spec_Index = 0     
+    #Local_Spec_Index = 0  
+    Spec_Init_Done.value = 0
     Pros_Spec_Init = Process(target = Spec_Init_Process, args=(Integration_Continious, 0))
     Pros_Spec_Init.start()           
+    Spec_Is_Read.value = 0
     Pros_Spec = Process(target=Spec_Read_Process, args=(No_Spec_Sample, 1))
+    Timer_Is_Over.value = 0    
     P_Timer = Process(target=Timer_Multi_Process, args=(0.1,))
     P_Timer.start()
     while  Timer_Is_Over.value == 0:   
         DAQ_Signal[DAQ_Index[0]], DAQ_Time[DAQ_Index[0]] = DAQ1.readPort(PhotoDiod_Port)
         DAQ_Index[0] = DAQ_Index[0] + 1
-        
+     
     Pros_Spec.start()    
     DAQ1.writePort(Shutter_Port, 5)
     
