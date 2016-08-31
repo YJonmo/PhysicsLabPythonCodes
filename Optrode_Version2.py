@@ -296,6 +296,13 @@ if __name__ == "__main__":
         Spec1.setTriggerMode(3)                                       # It is set for free running mode
         #Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
        
+        ######################## Checkt to see if the folder called Records exist #############################    
+        Path_to_Records = os.path.abspath(os.path.join( os.getcwd())) + "/Records"
+        try:                                                      
+            os.chdir(Path_to_Records)
+        except Exception, e:
+            print("Warning: a folder called \'Records\' does not exist in " +  os.path.abspath(os.path.join( os.getcwd())) + "\n Please creat a folder called \'Records\' in the current directory before proceeding with the experiment")
+
         
         DAQ1.writePort(Green_Shutter, 0)
         DAQ1.writePort(Blue_Shutter, 0)
@@ -471,7 +478,7 @@ if __name__ == "__main__":
                 
                 # ########### The file containing the records (HDF5 format)###########
                 #Path_to_Records = os.path.abspath(os.path.join( os.getcwd(), os.pardir)) + "/Records"
-                Path_to_Records = os.path.abspath(os.path.join( os.getcwd())) + "/Records"        
+                #Path_to_Records = os.path.abspath(os.path.join( os.getcwd())) + "/Records"        
                 os.chdir(Path_to_Records)
                 File_name_Suffix = str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"    
                 File_name = File_name_PreFix + '-' + File_name_Suffix    
