@@ -153,9 +153,6 @@ class DetectDAQT7:
         FinishingMoment = 0
         if type(Port) == str:
             Port = [Port]
-        print len(Port)
-        print
-        print Port
         try:
             aScanList = self.Handle.namesToAddresses(len(Port), Port)[0]
             
