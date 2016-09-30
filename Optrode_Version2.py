@@ -326,7 +326,7 @@ if __name__ == "__main__":
         Integration_list_MilSec = [8, 16, 32, 64, 128, 256, 512, 1024 ]    #Integration time for the spectrometer in ms
         Shutter_Delay = 4                 #ms
 
-        No_DAQ_Tests = 10000
+        No_DAQ_Tests = 20000
         DAQ_SamplingRate = DAQ_Speed_Test(No_DAQ_Tests)*1000            #Shows the sampling speed in ms
                 
         
@@ -413,7 +413,7 @@ if __name__ == "__main__":
     
         #%% ############## Defining the size of the arrays and matrices for recording the signals beased on the duration of the recording #######
         #No_DAC_Sample =   int(round((DurationOfReading + DurationOfReading/4) /DAQ_SamplingRate))        # Number of samples for DAQ analogue to digital converter (AINx).
-        No_DAC_Sample =   int((DurationOfReading + DurationOfReading/float(2)) /DAQ_SamplingRate)
+        No_DAC_Sample =   int((DurationOfReading + DurationOfReading) /DAQ_SamplingRate)
         
         if (Power_meter.Error == 0):         
             No_Power_Sample =   int((DurationOfReading + DurationOfReading/float(2)) /Power_SamplingRate) 
