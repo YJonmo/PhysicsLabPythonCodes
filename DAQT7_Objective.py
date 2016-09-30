@@ -119,7 +119,13 @@ class DetectDAQT7:
         Writing values to the ports
         * AIN ports are not writable
         '''
-        self.Handle.eWriteName(self.Handle.handle, Port, Volt)
+        if type(Port) == str:
+            Port = [Port]
+        if type(Volt) == str:
+            Volt = [Volt]
+            
+        self.Handle.eWriteNames(self.Handle.handle,len(Port) , Port, Volt)
+        #self.Handle.eWriteName(self.Handle.handle, Port, Volt)
         return
 
 
@@ -132,7 +138,9 @@ class DetectDAQT7:
         aValues = [199, 2, 1]
         self.Handle.handle.eWriteNames(self.Handle.handle, numFrames, names, aValues)
         '''
-        return np.float(self.Handle.eReadNames(self.Handle.handle,1 , [Port])[0]), time.time()
+        if type(Port) == str:
+            Port = [Port]
+        return np.float(self.Handle.eReadNames(self.Handle.handle, len(Port) , Port)[0]), time.time()
 
 
     def streamRead(self, scanRate, Port):
@@ -143,18 +151,29 @@ class DetectDAQT7:
         Read = [0, 1,2]
         StartingMoment = 0 
         FinishingMoment = 0
+        if type(Port) == str:
+            Port = [Port]
+        print len(Port)
+        print
+        print Port
         try:
-            aScanList = self.Handle.namesToAddresses(len([Port]), [Port])[0]
+            aScanList = self.Handle.namesToAddresses(len(Port), Port)[0]
             
             aNames = ["AIN_ALL_NEGATIVE_CH", "AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
             #aValues = [ljm.constants.GND, 10.0, 0, 0] #single-ended, +/-10V, 0 (default), 0 (default)
             #ljm.eWriteNames(handle, len(aNames), aNames, aValues)
             
             aValues = [self.Handle.constants.GND, 10.0, 0, 0] #single-ended, +/-10V, 0 (default), 0 (default)
+            
             self.Handle.eWriteNames(self.Handle.handle, 4, aNames, aValues)
+            '''
+            aNames = ["AIN1_RANGE"]
+            aValues = [0.1] #single-ended, +/-10V, 0 (default), 0 (default)
+            self.Handle.eWriteNames(self.Handle.handle, 1, aNames, aValues)
+            '''
             scansPerRead = int(scanRate*2)
             #scansPerRead = 32764
-            scanRate = self.Handle.eStreamStart(self.Handle.handle, scansPerRead, len([Port]), aScanList, scanRate)
+            scanRate = self.Handle.eStreamStart(self.Handle.handle, scansPerRead, len(Port), aScanList, scanRate)
             print("\nStream started with a scan rate of %0.0f Hz." % scanRate)
             StartingMoment = time.time()
             Read = self.Handle.eStreamRead(self.Handle.handle)
