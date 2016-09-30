@@ -10,19 +10,6 @@ import matplotlib.pyplot as plt
 
 time_start =  time.time()
 
-import h5py
-import DAQT7_Objective as DAQ
-import SeaBreeze_Objective as SBO
-import ThorlabsPM100_Objective as P100
-import time
-import datetime
-import numpy as np
-from multiprocessing import Process, Pipe, Value, Array
-import matplotlib.pyplot as plt
-import os.path
-
-time_start =  time.time()
-
 # Functions to save data
 
 No_iterations = 10
@@ -37,17 +24,17 @@ def SaveDataPWR(TimeIndex, Power):
 
     File_name = "Chose_a_Name_ThorlabsPM100" + str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"
     file = h5py.File(File_name, "w")
-    P100_subgroup1 = file.create_group("ThorlabsPM100")
-    P100_Powers = file.create_dataset('ThorlabsPM100/Power', data = Power)
-    P100_TimeIndex = file.create_dataset('ThorlabsPM100/TimeIndex', data = TimeIndex)
+    file.create_group("ThorlabsPM100")
+    file.create_dataset('ThorlabsPM100/Power', data = Power)
+    file.create_dataset('ThorlabsPM100/TimeIndex', data = TimeIndex)
     file.close()
 
 def SaveDataDAQ(TimeIndex, Voltages):                          # This function save the recorded date in the HDF5 format. You don't need to call it when using for testing.
     File_name = "Chose_a_Name_DAQT7" + str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"
     file = h5py.File(File_name, "w")
     Spec_subgroup1 = file.create_group("DAQT7")
-    Spec_intensities = file.create_dataset('DAQT7/Voltages', data = Voltages)
-    Spec_wavelength = file.create_dataset('DAQT7/TimeIndex', data = TimeIndex)
+    file.create_dataset('DAQT7/Voltages', data = Voltages)
+    file.create_dataset('DAQT7/TimeIndex', data = TimeIndex)
     #dset.attrs["attr"] = b"Hello"
     Spec_subgroup1.attrs['DAQT7 Details'] = np.string_(DAQ1.getDetails())
     file.close()
@@ -57,23 +44,12 @@ def SaveDataSPEC(WaveLength, Intensities,Spec_Index):                          #
     File_name = "Chose_a_Name_Spectrometer" + str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"
     file = h5py.File(File_name, "w")
     Spec_subgroup1 = file.create_group("Spectrometer")
-    Spec_intensities = file.create_dataset('Spectrometer/Intensities', data = Intensities)
-    Spec_time = file.create_dataset('Spectrometer/Spec_Latency', data = Spec_Latency)
-    Spec_wavelength = file.create_dataset('Spectrometer/WaveLength', data = WaveLength)
+    file.create_dataset('Spectrometer/Intensities', data = Intensities)
+    file.create_dataset('Spectrometer/Spec_Latency', data = Spec_Latency)
+    file.create_dataset('Spectrometer/WaveLength', data = WaveLength)
     Spec_subgroup1.attrs['Spectrometer Details'] = np.string_(Spec1.readDetails())
     file.close()
     
-import h5py
-import DAQT7_Objective as DAQ
-import SeaBreeze_Objective as SBO
-import ThorlabsPM100_Objective as P100
-import time
-import datetime
-import numpy as np
-from multiprocessing import Process, Value, Array
-import matplotlib.pyplot as plt
-
-time_start =  time.time()
 
 
 
@@ -89,11 +65,11 @@ def Spec_Read_Process(No_Spec_Sample):
     Spec_Is_Done.value = 1
 
 
-def DAQ_Read_Process(SamplingRate):
-    #SamplingRate = int(No_DAC_Sample/2)  # 10kHz
+def DAQ_Read_Process(DAQ_SamplingRate):
+    #DAQ_SamplingRate = int(No_DAC_Sample/2)  # 10kHz
     print "GO GO GO!"
     print "FLASH NOW!"
-    Read, DAQ_Starting[0], DAQ_Ending[0] = DAQ1.streamRead(SamplingRate, 'AIN1')
+    Read, DAQ_Starting[0], DAQ_Ending[0] = DAQ1.streamRead(DAQ_SamplingRate, 'AIN1')
     #print Read[0]
     print len(Read[0])
     #print len(DAQ_Signal)
@@ -120,43 +96,76 @@ def Power_Read_Process(No_Power_Sample):
 
 if __name__ == "__main__":
 
-    PhotoDiod_Port = "AIN1"
-    Spec1 = SBO.DetectSpectrometer()
-    Integration_Time = 2                                        # Integration time in ms
-    Spec1.setTriggerMode(0)                                      # It is set for free running mode
-    Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
+    
+    
     DAQ1 = DAQ.DetectDAQT7()
+    Spec1 = SBO.DetectSpectrometer()
     Power_meter = P100.DetectPM100D()
-    Spec_Is_Read = Value('i', 0)
-    Spec_Is_Read.value = 0
-    Spec_Is_Done = Value('i', 0)
-    Spec_Is_Done.value = 0
-    DAQ_Is_Read = Value('i', 0)
-    DAQ_Is_Read.value = 0
-    Power_Is_Read = Value('i', 0)
-    Power_Is_Read.value = 0
-    Timer_Is_Over = Value('i', 0)
-    Timer_Is_Over.value = 0
+    
+    ######################################################################################################
+    if (Spec1.Error == 1) & (DAQ1.Error == 1) & (Power_meter.Error == 1):
+        print ('Cession failed: could not detect nay devices')
+    else:
+        PhotoDiod_Port = "AIN1"
+        DurationOfReading = 2    # Duration of reading in seconds.
+        Timer_Is_Over = Value('i', 0)
+        Timer_Is_Over.value = 0        
+        
+        while 1==1:
+            DurationOfReading = raw_input('Enter the duration of the reading in seconds (a number between 0.5 to 5 seconds): \n')
+            try:
+                val = float(DurationOfReading)
+                if (float(DurationOfReading) < 0.5):
+                #if (float(Integration_Continious) < Spec_SamplingRate):
+                    print ('Duration time is too short. Enter a greater number')
+                elif (float(DurationOfReading) < 5):
+                    print ('Duration is too long. Enter a smaller number')
+            except ValueError:
+               print("That's not a number!")  
+               print ('\n')  
+    ######################################################################################################       
+           
+           
+    if (Spec1.Error == 0):
+        Integration_Time = 2                                         # Integration time in ms
+        Spec1.setTriggerMode(0)                                      # It is set for free running mode
+        Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
+        Spec_Is_Read = Value('i', 0)
+        Spec_Is_Read.value = 0
+        Spec_Is_Done = Value('i', 0)
+        Spec_Is_Done.value = 0
+        
+        No_Spec_Sample =  int(round(DurationOfReading*1000/(Integration_Time))) # Number of samples for spectrometer to read.
+        Full_Spec_Records2= Array('d', np.zeros(shape=( len(Spec1.Handle.wavelengths())*No_Spec_Sample ,1), dtype = float ))
+        Spec_Time   = Array('d', np.zeros(shape=(No_Spec_Sample ,1), dtype = float ))
+        Spec_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
 
-    DurationOfReading = 2    # Duration of reading in seconds.
-    #No_DAC_Sample =   int(round(DurationOfReading*1000/0.5))                # Number of samples for DAQ analogue to digital converter (AINx). Roughly DAQ can read AINx every 0.4 ms
+        Pros_Spec = Process(target=Spec_Read_Process, args=(No_Spec_Sample,))
+        Pros_Spec.start()
+    ######################################################################################################
+    
+    if (DAQ1.Error == 0):
+        DAQ_Is_Read = Value('i', 0)
+        DAQ_Is_Read.value = 0
+        Power_Is_Read = Value('i', 0)
+        Power_Is_Read.value = 0
+        
+        DAQ_SamplingRate = 10000    
+        No_DAC_Sample = DAQ_SamplingRate*2           # this results in a 10kHz sampling rate in streaming mode
+        
+        DAQ_Signal = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
+        DAQ_Time   = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
+        #DAQ_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
+        DAQ_Starting = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
+        DAQ_Ending = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
+
+
+    ######################################################################################################
+
+    if (Power_meter.Error == 0):
+        
     No_Power_Sample = int(round(DurationOfReading*1000/4.5))                # Number of samples for P100D Power meter to read. Roughly P100 can read the power every 2.7 ms.
-    No_Spec_Sample =  int(round(DurationOfReading*1000/(Integration_Time))) # Number of samples for spectrometer to read.
-    SamplingRate = 10000    
-    No_DAC_Sample = SamplingRate*2           # this results in a 10kHz sampling rate in streaming mode
-    Current_Spec_Record = Array('d', np.zeros(shape=( len(Spec1.Handle.wavelengths()) ,1), dtype = float ))
-    #Spec_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
-    Full_Spec_Records = np.zeros(shape=(len(Spec1.Handle.wavelengths()), No_Spec_Sample ), dtype = float )
-    Spec_Time   = Array('d', np.zeros(shape=( No_Spec_Sample ,1), dtype = float ))
-    #Spec_Index = 0
-    Spec_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
-
-    DAQ_Signal = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
-    DAQ_Time   = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
-    #DAQ_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
-    DAQ_Starting = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-    DAQ_Ending = Array('d', np.zeros(shape=( 1 ,1), dtype = float ))
-
+    
     Power_Signal = Array('d', np.zeros(shape=( No_Power_Sample ,1), dtype = float ))
     Power_Time   = Array('d', np.zeros(shape=( No_Power_Sample ,1), dtype = float ))
     Power_Index = Array('i', np.zeros(shape=( 1 ,1), dtype = int ))
@@ -164,12 +173,11 @@ if __name__ == "__main__":
     # ########### The file containing the records (HDF5 format)###########'''
 
 
-    Pros_DAQ = Process(target=DAQ_Read_Process, args=(SamplingRate,))
+    Pros_DAQ = Process(target=DAQ_Read_Process, args=(DAQ_SamplingRate,))
     Pros_DAQ.start()
     Pros_Power = Process(target=Power_Read_Process, args=(No_Power_Sample,))
     Pros_Power.start()
-    Pros_Spec = Process(target=Spec_Read_Process, args=(No_Spec_Sample,))
-    Pros_Spec.start()
+
 
 
     while((Spec_Is_Done.value == 0)):
@@ -234,7 +242,7 @@ if __name__ == "__main__":
     plt.show()
 
     #DAQ_Time = np.linspace(0, No_DAC_Sample/(10000), No_DAC_Sample)+0.038
-    DAQ_Time = np.linspace(DAQ_Starting[0], (No_DAC_Sample*1)/float(SamplingRate), No_DAC_Sample) 
+    DAQ_Time = np.linspace(DAQ_Starting[0], (No_DAC_Sample*1)/float(DAQ_SamplingRate), No_DAC_Sample) 
     # SSSSAAAVVVEEE!!!
     SaveDataDAQ(DAQ_Time,DAQ_Signal) 
     SaveDataPWR(Power_Latency, Power_Signal[0:Power_Index[0]])
