@@ -1,8 +1,6 @@
-
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jul 12 11:00:10 2016
-
 @author: Yaqub
 """
 
@@ -296,6 +294,13 @@ if __name__ == "__main__":
         Spec1.setTriggerMode(3)                                       # It is set for free running mode
         #Spec1.setIntegrationTime(Integration_Time*1000)              # Integration time is in microseconds when using the library
        
+        ######################## Checkt to see if the folder called Records exist #############################    
+        Path_to_Records = os.path.abspath(os.path.join( os.getcwd())) + "/Records"
+        try:                                                      
+            os.chdir(Path_to_Records)
+        except Exception, e:
+            print("Warning: a folder called \'Records\' does not exist in " +  os.path.abspath(os.path.join( os.getcwd())) + "\n Please creat a folder called \'Records\' in the current directory before proceeding with the experiment")
+
         
         DAQ1.writePort(Green_Shutter, 0)
         DAQ1.writePort(Blue_Shutter, 0)
@@ -321,7 +326,7 @@ if __name__ == "__main__":
         Integration_list_MilSec = [8, 16, 32, 64, 128, 256, 512, 1024 ]    #Integration time for the spectrometer in ms
         Shutter_Delay = 4                 #ms
 
-        No_DAQ_Tests = 20000
+        No_DAQ_Tests = 10000
         DAQ_SamplingRate = DAQ_Speed_Test(No_DAQ_Tests)*1000            #Shows the sampling speed in ms
                 
         
@@ -408,7 +413,7 @@ if __name__ == "__main__":
     
         #%% ############## Defining the size of the arrays and matrices for recording the signals beased on the duration of the recording #######
         #No_DAC_Sample =   int(round((DurationOfReading + DurationOfReading/4) /DAQ_SamplingRate))        # Number of samples for DAQ analogue to digital converter (AINx).
-        No_DAC_Sample =   int((DurationOfReading + DurationOfReading) /DAQ_SamplingRate)
+        No_DAC_Sample =   int((DurationOfReading + DurationOfReading/float(2)) /DAQ_SamplingRate)
         
         if (Power_meter.Error == 0):         
             No_Power_Sample =   int((DurationOfReading + DurationOfReading/float(2)) /Power_SamplingRate) 
@@ -471,7 +476,7 @@ if __name__ == "__main__":
                 
                 # ########### The file containing the records (HDF5 format)###########
                 #Path_to_Records = os.path.abspath(os.path.join( os.getcwd(), os.pardir)) + "/Records"
-                Path_to_Records = os.path.abspath(os.path.join( os.getcwd())) + "/Records"        
+                #Path_to_Records = os.path.abspath(os.path.join( os.getcwd())) + "/Records"        
                 os.chdir(Path_to_Records)
                 File_name_Suffix = str('%s' %datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))+ ".hdf5"    
                 File_name = File_name_PreFix + '-' + File_name_Suffix    
@@ -583,4 +588,4 @@ if __name__ == "__main__":
         time.sleep(0.1)
         DAQ1.close()
         Spec1.close()
-    '''    
+    '''
