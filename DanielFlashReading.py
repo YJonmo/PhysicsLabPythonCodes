@@ -252,11 +252,13 @@ if __name__ == "__main__":
                     
             SaveDataDAQ(DAQ_Time,DAQ_Signal) 
             
-            
-            plt.plot(DAQ_Time, DAQ_Signal[:], label = "Photo Diode")
-            plt.title('Photo diode')
-            plt.xlabel('Time (s)')
-            plt.ylabel('Voltage (v)')
+            for I in range(len(DAQ_Signal)):
+                plt.plot(DAQ_Time[I], DAQ_Signal[I])
+                
+            #plt.title('Photo diode')
+            #plt.xlabel('Time (s)')
+            #plt.ylabel('Voltage (v)')
+           
             
             DAQ1.close()
         ##################################################################################################    
