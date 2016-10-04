@@ -128,7 +128,7 @@ class DetectSpectrometer:
                 print ('Please unplug the spectrometer and then plug again. Then close the python command line and reopen it. ')
                 #return
             self.Error = 1    
-            print('\033[93m' + 'Openning spectrometer failed!')
+            print('Openning spectrometer failed!')
             return
 
     def readDetails(self):
