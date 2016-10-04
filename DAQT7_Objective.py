@@ -120,8 +120,11 @@ class DetectDAQT7:
         * AIN ports are not writable
         '''
         if type(Port) == str:
+            print 'Port is string'   
+            print (len(Port))
             Port = [Port]
-        if type(Volt) == str:
+            print(len(Port))
+        if (type(Volt) == str) | (type(Volt) == int) | (type(Volt) == float):
             Volt = [Volt]
             
         self.Handle.eWriteNames(self.Handle.handle,len(Port) , Port, Volt)
@@ -143,7 +146,7 @@ class DetectDAQT7:
         return np.float(self.Handle.eReadNames(self.Handle.handle, len(Port) , Port)[0]), time.time()
 
 
-    def streamRead(self, scanRate, Port):
+    def streamRead(self, scanRate, scansPerRead, Port):
         '''
         Reading analogue inpute values (0 to 10 v) in the AIN ports, in stream mode (using the internal buffer of the DAQ).
         scanRate should be below 100000 when using one port only. Using two ports (e.g., AIN0 and AIN1, then it should be below 45000). Please refer to the manual.         
@@ -168,7 +171,9 @@ class DetectDAQT7:
             aValues = [0.1] #single-ended, +/-10V, 0 (default), 0 (default)
             self.Handle.eWriteNames(self.Handle.handle, 1, aNames, aValues)
             '''
-            scansPerRead = int(scanRate*2)
+            
+            #scansPerRead = int(scanRate*2)
+            scansPerRead = int(scansPerRead)
             #scansPerRead = 32764
             scanRate = self.Handle.eStreamStart(self.Handle.handle, scansPerRead, len(Port), aScanList, scanRate)
             print("\nStream started with a scan rate of %0.0f Hz." % scanRate)
