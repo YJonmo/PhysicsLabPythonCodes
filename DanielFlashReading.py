@@ -66,13 +66,12 @@ def Spec_Read_Process(No_Spec_Sample):
     Spec_Is_Done.value = 1
 
 
-def DAQ_Read_Process(DAQ_SamplingRate, Port):
-    Read, DAQ_Starting[0], DAQ_Ending[0] = DAQ1.streamRead(DAQ_SamplingRate, Port)
+def DAQ_Read_Process(DAQ_SamplingRate, ScansPerRead, Port):
+    Read, DAQ_Starting[0], DAQ_Ending[0] = DAQ1.streamRead(DAQ_SamplingRate, ScansPerRead, Port)
  
     print len(Read[0])
-
     DAQ_Signal[0:len(Read[0])] = np.asarray(Read[0])
-    print "spte2"
+    
         
     '''
     # ######## A function for reading the DAQ analogue inpute on AINX ########
@@ -100,7 +99,7 @@ if __name__ == "__main__":
     
     ######################################################################################################
     if (Spec1.Error == 1) & (DAQ1.Error == 1) & (Power_meter.Error == 1):
-        print ('Cession failed: could not detect nay devices')
+        print ('Cession failed: could not detect any devices')
     else:
         PhotoDiod_Port = "AIN1"
         DurationOfReading = 2    # Duration of reading in seconds.
@@ -118,11 +117,11 @@ if __name__ == "__main__":
         while 1==1:
             DurationOfReading = raw_input('Enter the duration of the reading in seconds (a number between 0.5 to 5 seconds): \n')
             try:
-                val = float(DurationOfReading)
+                DurationOfReading = float(DurationOfReading)
                 if (float(DurationOfReading) < 0.5):
                 #if (float(Integration_Continious) < Spec_SamplingRate):
                     print ('Duration time is too short. Enter a greater number')
-                elif (float(DurationOfReading) > 5):
+                elif (float(DurationOfReading) > 10):
                     print ('Duration is too long. Enter a smaller number')
                 else:
                     break
@@ -147,12 +146,14 @@ if __name__ == "__main__":
         ######################################################################################################
         if (DAQ1.Error == 0):
             DAQ_Is_Read.value = 0
-            StreamPort = ['AIN0', 'AIN1']            
-            DAQ_SamplingRate = 40000                     # this sampling rate in HZ is for when the internal buffer of DAQ is used
+            StreamPort = ['AIN0', 'AIN1']          
+            DAQ_SamplingRate = 45000                     # this sampling rate in HZ is for when the internal buffer of DAQ is used
                                                          # check this link to see what sampling rates are appropriate:
-                                                         # https://labjack.com/support/datasheets/t7/appendix-a-1            
-            No_DAC_Sample = DAQ_SamplingRate*4           # if you are using only on AIN then: No_DAC_Sample = DAQ_SamplingRate*2 
+                                                         # https://labjack.com/support/datasheets/t7/appendix-a-1          
+            ScansPerRead = int(DAQ_SamplingRate*DurationOfReading/float(2))
+            #No_DAC_Sample = DAQ_SamplingRate*4           # if you are using only on AIN then: No_DAC_Sample = DAQ_SamplingRate*2 
                                                          # if you are using two AINs then: No_DAC_Sample = DAQ_SamplingRate*4
+            No_DAC_Sample = ScansPerRead*len(StreamPort)
             
             DAQ_Signal = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
             DAQ_Time   = Array('d', np.zeros(shape=( No_DAC_Sample ,1), dtype = float ))
@@ -173,7 +174,7 @@ if __name__ == "__main__":
             Pros_Spec = Process(target=Spec_Read_Process, args=(No_Spec_Sample,))
             Pros_Spec.start()
         if (DAQ1.Error == 0):    
-            Pros_DAQ = Process(target=DAQ_Read_Process, args=(DAQ_SamplingRate,StreamPort))
+            Pros_DAQ = Process(target=DAQ_Read_Process, args=(DAQ_SamplingRate, ScansPerRead, StreamPort))
             Pros_DAQ.start()
         if (Power_meter.Error == 0):
             Pros_Power = Process(target=Power_Read_Process, args=(No_Power_Sample,))
