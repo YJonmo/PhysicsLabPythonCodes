@@ -20,7 +20,7 @@ class HDF5_Data:
             print('Optrode version 2 (new)')
             self.allocator(Data)
                   
-    def allocator(self, Data):                          # This function creats the variable from the loaded datas set
+    def allocator(self, Data):                          # This function creats the variable from the loaded data set
         print('\nYour variables are \'Splitted_Data.\' + following attributes: \n')
         for I  in range(len(Data.keys())):
             for II in range(len(Data[Data.keys()[I]].keys())):
