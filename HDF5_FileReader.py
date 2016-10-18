@@ -21,7 +21,7 @@ class HDF5_Data:
             self.allocator(Data)
                   
     def allocator(self, Data):                          # This function creats the variable from the loaded datas set
-        print('\nYour variables are your \'Splitted_Data.\' + following attributes: \n')
+        print('\nYour variables are \'Splitted_Data.\' + following attributes: \n')
         for I  in range(len(Data.keys())):
             for II in range(len(Data[Data.keys()[I]].keys())):
                 exec((Data.keys()[I] + '_' + Data[Data.keys()[I]].keys()[II]) + "=Data[Data.keys()[I]].values()[II]")   
