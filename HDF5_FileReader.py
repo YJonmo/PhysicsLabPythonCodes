@@ -14,8 +14,10 @@ class HDF5_Data:
     def __init__(self, Data):
         #self.data = Data
         if   len((Data).keys()) == 3:
+            print('Optrode version 1 (old)')
             self.allocator(Data)
         elif len(Data.keys()) == 2:
+            print('Optrode version 2 (new)')
             self.allocator(Data)
                   
     def allocator(self, Data):                          # This function creats the variable from the loaded datas set
