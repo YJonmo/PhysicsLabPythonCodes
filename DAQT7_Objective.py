@@ -120,8 +120,6 @@ class DetectDAQT7:
         * AIN ports are not writable
         '''
         if type(Port) == str:
-            print 'Port is string'   
-            print (len(Port))
             Port = [Port]
             print(len(Port))
         if (type(Volt) == str) | (type(Volt) == int) | (type(Volt) == float):

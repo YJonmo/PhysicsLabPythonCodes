@@ -16,7 +16,10 @@ import datetime
 DAQ1 = DAQ.DetectDAQT7()
 
 SamplingRate = 10000  # 10kHz
-Read, Starting, Ending = DAQ1.streamRead(SamplingRate, 'AIN1')
+DurationOfReading = 2 
+ScansPerRead = int(SamplingRate*DurationOfReading/float(2))
+#Read, Starting, Ending = DAQ1.streamRead(SamplingRate, 'AIN1')
+Read, Starting, Ending = DAQ1.streamRead(SamplingRate, ScansPerRead, 'AIN1')
 
 plt.plot(Read[0])
 plt.show()
