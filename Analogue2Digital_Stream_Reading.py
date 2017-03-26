@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jul 27 16:39:11 2016
-
+This code uses the stream reading of the DAQT7
 @author: Yaqub
 """
 
