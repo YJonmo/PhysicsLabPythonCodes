@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 24 10:30:33 2016
-
-@author: Yaqub
+This code demonstrates the reading of spectrometers, and saving the data in HDF5 format.
+@author: Yaqub Jonmohamadi
 """
 
 import SeaBreeze_Objective as SBO
