@@ -1,3 +1,9 @@
+"""
+This code attempted to be able to detect and read any connnected device by any format decided by the user. 
+However, there are some aspects of this code which are not finished yet. Hence the code is incomplete at this point.
+@author: Yaqub Jonmohamadi
+"""
+
 import h5py
 import DAQT7_Objective as DAQ
 import SeaBreeze_Objective as SBO
