@@ -1,3 +1,8 @@
+"""
+This code runs the power meter, DAQT7 analogue to digital convertor (using stream mode), and specrometer simultaneously using multiprocessing library. 
+@author: Yaqub Jonmohamadi
+"""
+
 import h5py
 import DAQT7_Objective as DAQ
 import SeaBreeze_Objective as SBO
