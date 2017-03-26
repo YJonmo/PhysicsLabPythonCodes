@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
+This is a small GUI to read the files.
+@author: Yaqub Jonmohamadi
 """
 
 from Tkinter import Tk
