@@ -1,5 +1,5 @@
 """
-This code runs the power meter, DAQT7 analogue to digital convertor (using stream mode), and specrometer simultaneously using multiprocessing library. 
+This code runs the power meter, DAQT7 analogue to digital convertor (using normal mode), and specrometer simultaneously using multiprocessing library. 
 @author: Yaqub Jonmohamadi
 """
 
