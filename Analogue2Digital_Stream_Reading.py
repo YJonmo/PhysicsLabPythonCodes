@@ -2,7 +2,7 @@
 """
 Created on Wed Jul 27 16:39:11 2016
 This code uses the stream reading of the DAQT7
-@author: Yaqub
+@author: Yaqub Jonmohamadi
 """
 
 import DAQT7_Objective as DAQ
