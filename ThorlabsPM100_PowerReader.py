@@ -1,3 +1,8 @@
+
+"""
+This code demonstrates the reading of Power meter PM100, and saving the data in HDF5 format.
+@author: Yaqub Jonmohamadi
+"""
 import numpy as np
 import time
 import h5py
