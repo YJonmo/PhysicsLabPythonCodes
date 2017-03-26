@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jul  6 14:53:46 2016
-
+This code calculates and plost the latencies of the connected devices such as spectrometer, DAQT7 analogue to digital convertor, and power meter.
 @author: Yaqub
 """
 
