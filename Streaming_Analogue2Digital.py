@@ -1,6 +1,7 @@
 """
-Demonstrates how to stream using the eStream functions.
-
+Demonstrates how to stream using the eStream functions (using the internal buffer of the DAQT7).
+This is for analogue to digital conversion on DAQT7.
+@author: Yaqub Jonmohamadi
 """
 
 from labjack import ljm
