@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jul 12 11:00:10 2016
-@author: Yaqub
+This code runs the Optrode version 2
+@author: Yaqub Jonmohamadi
 """
 
 #%%
