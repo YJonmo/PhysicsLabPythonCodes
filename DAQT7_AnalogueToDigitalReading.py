@@ -1,6 +1,6 @@
 """
 Demonstrates reading 1 analog input (AINs) in a loop from a LabJack.
-This code uses demonstrates the analogue to digital conversion for DAQT7, and saving the data in HDF5 format.
+This code demonstrates the analogue to digital conversion for DAQT7, and saving the data in HDF5 format.
 @author: Yaqub Jonmohamadi
 """
 #%%
